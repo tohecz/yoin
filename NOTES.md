@@ -1,5 +1,5 @@
 
-# personal notes about the project
+# Personal notes about the project
 
-- Logo: ⧉ (U+29C9 TWO JOINED SQUARES)
+- Could be the logo: ⧉ (U+29C9 TWO JOINED SQUARES)
 
