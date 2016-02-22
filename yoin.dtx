@@ -1,0 +1,78 @@
+% \iffalse meta-comment
+% 
+% This part is not going to appear anywhere so is good for 'header'
+% information.
+%
+%% These lines, starting with two "%", will be extracted so can be used
+%% to copy some kind of header into target (.sty) files: the team .dtx
+%% use this to dump the copyright header from the meta-comment block into
+%% the output.
+%
+%<*driver>
+\documentclass{ltxdoc}
+% Whatever packages here
+%
+% Might include
+% \usepackage{\jobname}
+%
+% Very handy is
+% \usepackage[numbered]{hypdoc} % hyperref for ltxdoc
+%
+% You might want the following
+%\EnableCrossrefs
+%\CodelineIndex
+%\RecordChanges
+\begin{document}
+  \DocInput{\jobname.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% ^^A Comments in the documentation part start ^^A
+%
+% ^^A If you use the extracted package itself you can do
+% \GetFileInfo{\jobname.sty}
+% ^^A and define \filedate, etc.
+%
+% ^^A Meta data for the package
+% \title{\pkg{mypkg}\thanks{^^A
+%   This file describes version \fileversion, last revised \filedate.^^A
+% }}
+% \author{^^A
+%   Some Guy\thanks{E-mail: some.guy@some.domain}^^A
+% }
+% \date{Released \filedate}
+%
+% \section{User documentation}
+%
+% User documentation would appear here.
+%
+% ^^A This will appear at the end of the PDF, which might or might not include
+% ^^ the typeset code
+% \StopEventually{^^A
+%   \PrintChanges
+%   \PrintIndex
+% }
+%
+% \section{Implementation}
+%
+%    \begin{macrocode}
+%<*package>
+\RequirePackage{expl3,l3keys2e,xparse}
+\ProvidesExplPackage{yoin}{v0.1}{Joining articles into issues}
+%    \end{macrocode}
+%
+% \begin{macro}{\join_blabla:}
+%   Some code documented here.
+%    \begin{macrocode}
+\cs_new:Nn \join_blabla: {
+	Blabla
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+%
+% \Finale
