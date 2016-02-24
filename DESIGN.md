@@ -16,3 +16,24 @@ Before any implementation is done, some things have to be fixed from the design 
 - Allow parallel processes for the articles (is it possible? I do that now in linux, but that's using BASH).
 - Allow various compilation chains for various articles (KV interface for `\addarticle`).
 - Allow different configurations to be defined and switched between easily.
+
+# Idea for UI
+
+% file issue.tex
+\usepackage[onlyflags={aaa,bbb}]{yoin}
+
+...
+
+\addarticle{JohnDoe}[tag=pdflatex]
+\addarticle{JoshSoe}[tag=lualatex]
+
+...
+
+\begin{yoinshell}[flag=aaa]
+  \RunForEach[onlytag=pdflatex]{pdflatex \BaseName}
+  \RunForEach[onlytag=lualatex]{lualatex \BaseName}
+  \Run{pdflatex --jobname=\JobName-1 "\def\noexpand\yoinnoshell{}\noexpand\input{\JobName}}"}
+\end{yoinshell}
+
+\begin{yoinshell}[flag=bbb]
+  \Run{
