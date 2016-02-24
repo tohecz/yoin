@@ -19,21 +19,32 @@ Before any implementation is done, some things have to be fixed from the design 
 
 # Idea for UI
 
-% file issue.tex
-\usepackage[onlyflags={aaa,bbb}]{yoin}
-
-...
-
-\addarticle{JohnDoe}[tag=pdflatex]
-\addarticle{JoshSoe}[tag=lualatex]
-
-...
-
-\begin{yoinshell}[flag=aaa]
-  \RunForEach[onlytag=pdflatex]{pdflatex \BaseName}
-  \RunForEach[onlytag=lualatex]{lualatex \BaseName}
-  \Run{pdflatex --jobname=\JobName-1 "\def\noexpand\yoinnoshell{}\noexpand\input{\JobName}}"}
-\end{yoinshell}
-
-\begin{yoinshell}[flag=bbb]
-  \Run{
+    % file issue.tex
+    \usepackage[onlyflags={aaa,bbb}]{yoin}
+    
+    ...
+    
+    \addarticle{JohnDoe}[tag=pdflatex]
+    \addarticle{JoshSoe}[tag=lualatex]
+    
+    ...
+    
+    \begin{yoinshell}[flag=aaa]
+      \RunForEach[onlytag=pdflatex]{pdflatex \BaseName}
+      \RunForEach[onlytag=lualatex]{lualatex \BaseName}
+      \AutoRunForEach[onlytag=pdflatex, engine=pdflatex]
+      \AutoRunForEach[onlytag=lualatex, engine=lualatex]
+      \Run{pdflatex --jobname=\JobName-1 "\def\noexpand\yoinnoshell{}\noexpand\input{\JobName}}"}
+      \AutoRun[suffix={-1}, prependmacros={\def\noexpand\yoinshell{}}]
+    \end{yoinshell}
+    
+    \begin{yoinshell}[flag=bbb]
+      \Run{gs %
+          -sOutputFile="\JobName-bw.pdf" %
+              -sDEVICE=pdfwrite %
+              -sColorConversionStrategy=Gray %
+              -dProcessColorModel=/DeviceGray %
+              -dAutoRotatePages=/None %
+              -dCompatibilityLevel=1.4 %
+              "\JobName.pdf\Space" < /dev/null}
+    \end{yoinshell}
