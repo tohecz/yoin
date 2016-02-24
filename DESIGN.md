@@ -35,16 +35,36 @@ Before any implementation is done, some things have to be fixed from the design 
       \AutoRunForEach[onlytag=pdflatex, engine=pdflatex]
       \AutoRunForEach[onlytag=lualatex, engine=lualatex]
       \Run{pdflatex --jobname=\JobName-1 "\def\noexpand\yoinnoshell{}\noexpand\input{\JobName}}"}
-      \AutoRun[suffix={-1}, prependmacros={\def\noexpand\yoinshell{}}]
+      \AutoRun[suffix={-1}, engine=pdflatex, prependmacros={\def\noexpand\yoinshell{}}]
     \end{yoinshell}
     
     \begin{yoinshell}[flag=bbb]
       \Run{gs %
-          -sOutputFile="\JobName-bw.pdf" %
-              -sDEVICE=pdfwrite %
-              -sColorConversionStrategy=Gray %
-              -dProcessColorModel=/DeviceGray %
-              -dAutoRotatePages=/None %
-              -dCompatibilityLevel=1.4 %
-              "\JobName.pdf\Space" < /dev/null}
+        -sOutputFile="\JobName-bw.pdf" %
+        -sDEVICE=pdfwrite %
+        -sColorConversionStrategy=Gray %
+        -dProcessColorModel=/DeviceGray %
+        -dAutoRotatePages=/None %
+        -dCompatibilityLevel=1.4 %
+        "\JobName.pdf\Space" < /dev/null}
     \end{yoinshell}
+    
+    ...
+    
+    \begin{document}
+    
+    \section{Foreword, colophon, whatever}
+    
+    ...
+    
+    \section{Table of Contents}
+    
+    \begin{itemize}
+    \yoinForEach{\Property{title} by \Property{authors} on page \Property{firstpage}{
+    \end{itemize}
+    
+    \joinSetPageNumber[]
+    
+    \joinPrintArticles[cleardoublepage,openany]
+    
+    \end{document}
