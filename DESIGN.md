@@ -30,12 +30,15 @@ Before any implementation is done, some things have to be fixed from the design 
     ...
     
     \begin{yoinshell}[flag=aaa]
-      \RunForEach[onlytag=pdflatex]{pdflatex \BaseName}
-      \RunForEach[onlytag=lualatex]{lualatex \BaseName}
-      \AutoRunForEach[onlytag=pdflatex, engine=pdflatex]
+      \RunForEach[onlytag=pdflatex]{pdflatex \BaseName} % compile articles that have to be compiled using pdflatex
+      \RunForEach[onlytag=lualatex]{lualatex \BaseName} % the same for lualatex
+      \AutoRunForEach[onlytag=pdflatex, engine=pdflatex] % the same as above using the "auto" feature
       \AutoRunForEach[onlytag=lualatex, engine=lualatex]
       \Run{pdflatex --jobname=\JobName-1 "\def\noexpand\yoinnoshell{}\noexpand\input{\JobName}}"}
-      \AutoRun[suffix={-1}, engine=pdflatex, prependmacros={\def\noexpand\yoinshell{}}]
+        % run this document, with jobname set to "issue-1", with \yoinnoshell defined so that all yoinshell blocks are ignored
+      \AutoRun[suffix={-1}, engine=pdflatex]
+        % the same as above using the "auto" feature (in autorun, \yoinnoshell will be defined the same way)
+        % it's also possible to add [prependmacros={\def\noexpand\whateverthepackageusewishes{\anythingherewillbeexpanded}}]
     \end{yoinshell}
     
     \begin{yoinshell}[flag=bbb]
@@ -60,11 +63,9 @@ Before any implementation is done, some things have to be fixed from the design 
     \section{Table of Contents}
     
     \begin{itemize}
-    \yoinForEach{\Property{title} by \Property{authors} on page \Property{firstpage}{
+    \yoinForEach{\item \Property{title} by \Property{authors} on page \Property{firstpage}}
     \end{itemize}
     
-    \joinSetPageNumber[]
-    
-    \joinPrintArticles[cleardoublepage,openany]
+    \joinPrintArticles[cleardoublepage,openany,setpagenumber]
     
     \end{document}
