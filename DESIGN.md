@@ -20,12 +20,17 @@ Before any implementation is done, some things have to be fixed from the design 
 # Idea for UI
 
     % file issue.tex
-    \usepackage[onlyflags={aaa,bbb}]{yoin}
+    \usepackage{yoin}
+    \yoinSetup{
+      defineflags = {aaa,bbb}, % All flags and tags have to be defined, to avoid unexpected typos
+      definetags = {pdflatex,lualatex},
+      onlyflags = {aaa} % We process only `joinshells` flagged `aaa`, not the other ones
+    }
     
     ...
     
-    \addarticle{JohnDoe}[tag=pdflatex]
-    \addarticle{JoshSoe}[tag=lualatex]
+    \yoinAdd{JohnDoe}[tag=pdflatex]
+    \yoinAdd{JoshSoe}[tag=lualatex]
     
     ...
     
@@ -63,7 +68,11 @@ Before any implementation is done, some things have to be fixed from the design 
     \section{Table of Contents}
     
     \begin{itemize}
-    \yoinForEach{\item \Property{title} by \Property{authors} on page \Property{firstpage}}
+    \yoinForEach{\item
+      \Property{title}
+      \IfPropertySet{authors}{by \Property{authors}}{}
+      on page \Property{firstpage}}
+    % macro \Property and its friends shall be expandable
     \end{itemize}
     
     \joinPrintArticles[cleardoublepage,openany,setpagenumber]
