@@ -39,11 +39,11 @@ Before any implementation is done, some things have to be fixed from the design 
       \RunForEach[onlytag=lualatex]{lualatex \BaseName} % the same for lualatex
       \AutoRunForEach[onlytag=pdflatex, engine=pdflatex] % the same as above using the "auto" feature
       \AutoRunForEach[onlytag=lualatex, engine=lualatex]
-      \Run{pdflatex --jobname=\JobName-1 "\def\noexpand\yoinnoshell{}\noexpand\input{\JobName}}"}
-        % run this document, with jobname set to "issue-1", with \yoinnoshell defined so that all yoinshell blocks are ignored
+      \Run{pdflatex --jobname=\JobName-1 "\PassOptionsToPackage{subprocess}{yoin}\noexpand\input{\JobName}}"}
+        % run this document, with jobname set to "issue-1", with "subprocess" passed to the package so that yoinshell blocks are ignored
       \AutoRun[suffix={-1}, engine=pdflatex]
-        % the same as above using the "auto" feature (in autorun, \yoinnoshell will be defined the same way)
-        % it's also possible to add [prependmacros={\def\noexpand\whateverthepackageusewishes{\anythingherewillbeexpanded}}]
+        % the same as above using the "auto" feature (in autorun, "subprocess" will be passed automatically)
+        % it's also possible to add [prependmacros={\PassOptionsToClass{bla}{blabla}}] or whatever
     \end{yoinshell}
     
     \begin{yoinshell}[flag=bbb]
