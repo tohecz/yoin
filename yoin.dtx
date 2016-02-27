@@ -9,14 +9,14 @@
 %% the output.
 %
 %<*driver>
-\documentclass{ltxdoc}
+\documentclass{l3doc}
 % Whatever packages here
 %
 % Might include
 % \usepackage{\jobname}
 %
 % Very handy is
-% \usepackage[numbered]{hypdoc} % hyperref for ltxdoc
+% \usepackage[numbered]{hypdoc} % hyperref for l3doc
 %
 % You might want the following
 %\EnableCrossrefs
@@ -39,7 +39,7 @@
 %   This file describes version \fileversion, last revised \filedate.^^A
 % }}
 % \author{^^A
-%   Some Guy\thanks{E-mail: some.guy@some.domain}^^A
+%   Tom Hejda\thanks{E-mail: tohecz@gmail.com}^^A
 % }
 % \date{Released \filedate}
 %
@@ -58,16 +58,88 @@
 %
 %    \begin{macrocode}
 %<*package>
+
 \RequirePackage{expl3,l3keys2e,xparse}
-\ProvidesExplPackage{yoin}{v0.1}{Joining articles into issues}
+
+\ProvidesExplPackage{yoin}{v0.0.1}{Joining articles into issues}
+
+\bool_new:N \g_yoin_subprocess_bool
+\bool_new:N \g_yoin_dryrun_bool
+
+\seq_new:N \g_yoin_flags_seq
+\seq_new:N \g_yoin_tags_seq
+
+\seq_new:N \g_yoin_onlyflags_seq
+\seq_new:N \g_yoin_onlytags_seq
+
+\bool_new:N \g_yoin_onlyflags_bool
+\bool_new:N \g_yoin_onlytags_bool
+
+\cs_new_protected:Nn \yoin_seq_gappend_clist:Nn {
+	\seq_set_from_clist:Nn \l__yoin_tmpa_seq { #1 }
+	\seq_gconcat:NNN #1 #1 \l__yoin_tmpa_seq
+}
+
+\keys_define:nn { yoin / general } {
+
+	dryrun .bool_gset:N = \g_yoin_dryrun_bool,
+	dryrun .initial:n = { false },
+
+	subprocess .bool_gset:N = \g_yoin_subprocess_bool,
+	subprocess .initial:n = { false },
+	
+	defineflags .code:n = \yoin_seq_gappend_clist:Nn \g_yoin_flags_seq { #1 },
+
+	definetags .code:n = \yoin_seq_gappend_clist:Nn \g_yoin_tags_seq { #1 },
+
+	onlyflags .code:n =
+		\seq_gset_from_clist:Nn \g_yoin_onlyflags_seq { #1 }
+		\bool_gset_true:N \g_yoin_onlyflags_bool
+		,
+
+	onlytags .code:n =
+		\seq_gset_from_clist:Nn \g_yoin_onlytas_seq { #1 }
+		\bool_gset_true:N \g_yoin_onlytags_bool
+		,
+
+}
+
+\msg_new:nnnn { yoin } { unknown-flag }
+	{ The flag `#1' is unknown to `yoin'. }
+	{ You either misspelled it or forgot to declare it. }
+
+\msg_new:nnnn { yoin } { unknown-tag }
+	{ The tag `#1' is unknown to `yoin'. }
+	{ You either misspelled it or forgot to declare it. }
+
+\keys_define:nn { yoin / yoinshell } {
+
+	flag .code:n =
+		\seq_if_in:NnF \g_yoin_flags_seq { #1 } { \msg_error:nnn { yoin } { unknown-flag } { #1 } }
+		\bool_if:NT \g_yoin_onlyflags_bool {
+			\seq_if_in:NnF \g_yoin_onlyflags_seq { #1 } {
+				\keys_set:nn { yoin / yoinshell } {
+					ignore = true
+				}
+			}
+		}
+		,
+
+	ignore .bool_set:N = \l_yoin_yoinshell_ignore_bool,
+	ignore .initial:n = { false },
+
+}
+
 %    \end{macrocode}
 %
-% \begin{macro}{\join_blabla:}
+%% \begin{macro}{\join_blabla:}
 %   Some code documented here.
 %    \begin{macrocode}
-\cs_new:Nn \join_blabla: {
+
+\cs_new:Nn \yoin_blabla: {
 	Blabla
 }
+
 %    \end{macrocode}
 % \end{macro}
 %
