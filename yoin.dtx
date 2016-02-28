@@ -85,7 +85,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %    \begin{macro}{\yoin_seq_gappend_clist:Nn}
-%    Append \T{clist} \p2 to \T{seq} \p1.
+%    Globally append \T{clist} \p2 to \T{seq} \p1.
 %    \begin{macrocode}
 \cs_new_protected:Nn \yoin_seq_gappend_clist:Nn {
 	\seq_set_from_clist:Nn \l__yoin_tmpa_seq { #1 }
@@ -102,18 +102,14 @@
 %    \begin{macrocode}
 \bool_new:N \g_yoin_subprocess_bool
 \bool_new:N \g_yoin_dryrun_bool
+\bool_new:N \g_yoin_onlyflags_bool
+\bool_new:N \g_yoin_onlytags_bool
 %    \end{macrocode}
 %    \begin{macrocode}
 \seq_new:N \g_yoin_flags_seq
 \seq_new:N \g_yoin_tags_seq
-%    \end{macrocode}
-%    \begin{macrocode}
 \seq_new:N \g_yoin_onlyflags_seq
 \seq_new:N \g_yoin_onlytags_seq
-%    \end{macrocode}
-%    \begin{macrocode}
-\bool_new:N \g_yoin_onlyflags_bool
-\bool_new:N \g_yoin_onlytags_bool
 %    \end{macrocode}
 %    \begin{macrocode}
 \msg_new:nnnn { yoin } { unknown-flag }
@@ -203,6 +199,40 @@
 %    \begin{macrocode}
 }
 %    \end{macrocode}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{yoinAdd macro --- adding articles to the issue}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% The key--value interface. In this case, we basically only store the keys for each article in a \T{prop}.
+%    \begin{macrocode}
+\tl_new:N \l__yoin_yoinadd_currentarticle_tl
+\seq_new:N \g__yoin_articles_seq
+\cs_new:Nn \yoin_article_prop:n {
+	g__yoin_yoinadd_article_#1_prop
+}
+\cs_generate_variant:Nn \yoin_yoinadd_prop:n { V }
+\cs_new_protected:Nn \yoin_yoinadd_storekey:nn {
+	\prop_gput:cnn { \yoin_article_prop:V \l__yoin_yoinadd_currentarticle_tl } { #1 } { #2 }
+}
+\cs_new_protected:Nn \yoin_yoinadd:nn {
+	\seq_gput_right:Nn \g__yoin_articles_seq { #1 }
+	\tl_set:Nn \l__yoin_yoinadd_currentarticle_tl
+	\prop_new:c { \yoin_yoinadd_prop:n { #1 } }
+	\keys_set:nn { yoin / yoinadd } { #2 }
+}
+\clist_map_inline { tag, forceopenany, forceopenright } {
+	\keys_define:nn { yoin / yoinadd } {
+		#1 .code:n = { \yoin_yoinadd_storekey { #1 } { ##1 } }
+	}
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+%    \end{macrocode}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Blablabla}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  \begin{macro}{\bla}
 %    \begin{macrocode}
