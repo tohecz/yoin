@@ -150,7 +150,7 @@
 %    \end{macrocode}
 %    \begin{macrocode}
 	onlytags .code:n =
-		\seq_gset_from_clist:Nn \g_yoin_onlytas_seq { #1 }
+		\seq_gset_from_clist:Nn \g_yoin_onlytags_seq { #1 }
 		\bool_gset_true:N \g_yoin_onlytags_bool
 		,
 %    \end{macrocode}
@@ -211,7 +211,7 @@
 \cs_new:Nn \yoin_article_prop:n {
 	g__yoin_yoinadd_article_#1_prop
 }
-\cs_generate_variant:Nn \yoin_yoinadd_prop:n { V }
+\cs_generate_variant:Nn \yoin_article_prop:n { V }
 \cs_new_protected:Nn \yoin_yoinadd_storekey:nn {
 	\prop_gput:cnn { \yoin_article_prop:V \l__yoin_yoinadd_currentarticle_tl } { #1 } { #2 }
 }
@@ -227,8 +227,8 @@
 	}
 }
 %    \end{macrocode}
-%    \begin{macrocode}
-%    \end{macrocode}
+% ^^A    \begin{macrocode}
+% ^^A    \end{macrocode}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{Blablabla}
