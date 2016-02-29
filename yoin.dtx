@@ -88,7 +88,7 @@
 %    Globally append \T{clist} \p2 to \T{seq} \p1.
 %    \begin{macrocode}
 \cs_new_protected:Nn \yoin_seq_gappend_clist:Nn {
-	\seq_set_from_clist:Nn \l__yoin_tmpa_seq { #1 }
+	\seq_set_from_clist:Nn \l__yoin_tmpa_seq { #2 }
 	\seq_gconcat:NNN #1 #1 \l__yoin_tmpa_seq
 }
 %    \end{macrocode}
@@ -113,13 +113,13 @@
 %    \end{macrocode}
 %    \begin{macrocode}
 \msg_new:nnnn { yoin } { unknown-flag }
-	{ The flag `#1' is unknown to `yoin'. }
-	{ You either misspelled it or forgot to declare it. }
+	{ The ~ flag ~ `#1' ~ is ~ unknown ~ to ~ `yoin'. }
+	{ You ~ either ~ misspelled ~ it ~ or ~forgot ~ to ~ declare ~ it. }
 %    \end{macrocode}
 %    \begin{macrocode}
 \msg_new:nnnn { yoin } { unknown-tag }
-	{ The tag `#1' is unknown to `yoin'. }
-	{ You either misspelled it or forgot to declare it. }
+	{ The ~ tag ~ `#1' ~ is ~ unknown ~ to ~ `yoin'. }
+	{ You ~ either ~ misspelled ~ it ~ or ~forgot ~ to ~ declare ~ it. }
 %    \end{macrocode}
 % The keys themselves:
 %    \begin{macrocode}
@@ -172,17 +172,106 @@
 }
 %    \end{macrocode}
 %    \begin{macrocode}
-\NewDocummentCommand \yoinSetup { R[]{} } {
+\NewDocumentCommand \yoinSetup { R[]{} } {
 	\yoin_setup:n { #1 }
 }
 %    \end{macrocode}
 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{\T{\\yoinAdd} macro --- adding articles to the issue}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% The key--value interface. In this case, we basically only store the keys for each article in a \T{prop}.
+% First, an interface for setting the keys for the articles.
+% \T{\\g_yoin_articles_seq} stores the list of the existing articles.
+% \T{\\yoin_article_prop:n} returns the name of the \T{prop} for the given article;
+%  \emph{no check for existence is done at this place.}
 %    \begin{macrocode}
+\seq_new:N \g_yoin_articles_seq
+%    \end{macrocode}
+%    \begin{macrocode}
+\cs_new:Nn \yoin_article_prop:n {
+	g__yoin_article_#1_prop
+}
+\cs_generate_variant:Nn \yoin_article_prop:n { V }
+%    \end{macrocode}
+% For processing \T{\\yoinAdd}, we first set up a \T{tl} to contain the name of the article, then create the \T{prop},
+%  and finally use \T{l3keys} to fill in the \T{prop}.
+% Note that if an article is added twice, an error is issued, if the error is ignored, the article is not added but
+%  the properties are set.
+%    \begin{macrocode}
+\tl_new:N \l__yoin_yoinadd_currentarticle_tl
+%    \end{macrocode}
+%    \begin{macrocode}
+\cs_new_protected:Nn \__yoin_yoinadd_storekey:nn {
+	\prop_gput:cnn { \yoin_article_prop:V \l__yoin_yoinadd_currentarticle_tl } { #1 } { #2 }
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\cs_new_protected:Nn \yoin_yoinadd:nn {
+	\seq_if_in:NnTF \g_yoin_articles_seq { #1 } {
+		\msg_error:nnn { yoin } { yoinadd / duplicatearticle } { #1 }
+	} {
+		\seq_gput_right:Nn \g_yoin_articles_seq { #1 }
+		\prop_new:c { \yoin_article_prop:n { #1 } }
+	}
+	\tl_set:Nn \l__yoin_yoinadd_currentarticle_tl { #1 }
+	\keys_set:nn { yoin / yoinadd } { #2 }
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\NewDocumentCommand \yoinAdd { m O{} } {
+	\yoin_yoinadd:nn { #1 } { #2 }
+}
+%    \end{macrocode}
+% The error message for adding a duplicate article.
+%    \begin{macrocode}
+\msg_new:nnn { yoin } { yoinadd / duplicatearticle }
+	{ The ~ article ~ "#1" ~ has ~ been ~ already ~ processed ~ by ~ \token_to_str:N \yoinAdd ~.}
+%    \end{macrocode}
+% The keys here are pretty simple; each defined key just stores its value in the \T{prop}.
+% We recall that \T{\#1} is the key and \T{\#\#1} is the value.
+%    \begin{macrocode}
+\clist_map_inline:nn { forceopenany, forceopenright } {
+	\keys_define:nn { yoin / yoinadd } {
+		#1 .code:n = \__yoin_yoinadd_storekey:nn { #1 } { ##1 },
+	}
+}
+%    \end{macrocode}
+% However, for the \T{tag} key, we check that the tag exists.
+%    \begin{macrocode}
+\keys_define:nn { yoin / yoinadd } {
+	tag .code:n =
+		\__yoin_error_if_tag_undefined:n { #1 }
+		\__yoin_yoinadd_storekey:nn { tag } { #1 }
+		,
+}
+%    \end{macrocode}
+% ^^A    \begin{macrocode}
+% ^^A    \end{macrocode}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Blablabla}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%    \begin{macrocode}
+\prg_new_protected_conditional:Nnn \yoin_if_tag_defined:n { T, F, TF } {
+	\seq_if_in:NnTF \g_yoin_tags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
+}
+\prg_new_protected_conditional:Nnn \yoin_if_flag_defined:n { T, F, TF } {
+	\seq_if_in:NnTF \g_yoin_flags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
+}
+\cs_new_protected:Nn \__yoin_error_if_tag_undefined:n {
+	\yoin_if_tag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-tag } { #1 } }
+}
+\cs_new_protected:Nn \__yoin_error_if_flag_undefined:n {
+	\yoin_if_flag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-flag } { #1 } }
+}
 \keys_define:nn { yoin / yoinshell } {
 %    \end{macrocode}
 %    \begin{macrocode}
 	flag .code:n =
-		\seq_if_in:NnF \g_yoin_flags_seq { #1 } { \msg_error:nnn { yoin } { unknown-flag } { #1 } }
+		\__yoin_error_if_flag_undefined:n { #1 }
 		\bool_if:NT \g_yoin_onlyflags_bool {
 			\seq_if_in:NnF \g_yoin_onlyflags_seq { #1 } {
 				\keys_set:nn { yoin / yoinshell } {
@@ -200,42 +289,16 @@
 }
 %    \end{macrocode}
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{yoinAdd macro --- adding articles to the issue}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% The key--value interface. In this case, we basically only store the keys for each article in a \T{prop}.
-%    \begin{macrocode}
-\tl_new:N \l__yoin_yoinadd_currentarticle_tl
-\seq_new:N \g__yoin_articles_seq
-\cs_new:Nn \yoin_article_prop:n {
-	g__yoin_yoinadd_article_#1_prop
-}
-\cs_generate_variant:Nn \yoin_article_prop:n { V }
-\cs_new_protected:Nn \yoin_yoinadd_storekey:nn {
-	\prop_gput:cnn { \yoin_article_prop:V \l__yoin_yoinadd_currentarticle_tl } { #1 } { #2 }
-}
-\cs_new_protected:Nn \yoin_yoinadd:nn {
-	\seq_gput_right:Nn \g__yoin_articles_seq { #1 }
-	\tl_set:Nn \l__yoin_yoinadd_currentarticle_tl
-	\prop_new:c { \yoin_yoinadd_prop:n { #1 } }
-	\keys_set:nn { yoin / yoinadd } { #2 }
-}
-\clist_map_inline { tag, forceopenany, forceopenright } {
-	\keys_define:nn { yoin / yoinadd } {
-		#1 .code:n = { \yoin_yoinadd_storekey { #1 } { ##1 } }
-	}
-}
-%    \end{macrocode}
-% ^^A    \begin{macrocode}
-% ^^A    \end{macrocode}
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{Blablabla}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
 %  \begin{macro}{\bla}
 %    \begin{macrocode}
+
+
+
+\cs_new_protected:Nn \yoin_keys_set_from_file:nn {
+	\tl_set_from_file:Nnn \l_tmpa_tl { } { #2 }
+	\keys_set:nV { #1 } \l_tmpa_tl
+}
+\cs_generate_variant:Nn \keys_set:nn { nV }
 
 \cs_new:Nn \yoin_blabla: {
 	Blabla
