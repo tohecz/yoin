@@ -232,13 +232,13 @@
 % The keys here are pretty simple; each defined key just stores its value in the \T{prop}.
 % We recall that \T{\#1} is the key and \T{\#\#1} is the value.
 %    \begin{macrocode}
-\clist_map_inline:nn { forceopenany, forceopenright } {
+\clist_map_inline:nn { forceopenany, forceopenright, ignore } {
 	\keys_define:nn { yoin / yoinadd } {
 		#1 .code:n = \__yoin_yoinadd_storekey:nn { #1 } { ##1 },
 	}
 }
 %    \end{macrocode}
-% However, for the \T{tag} key, we check that the tag exists.
+% However, for the \T{tag} key, we additionally check that the tag exists.
 %    \begin{macrocode}
 \keys_define:nn { yoin / yoinadd } {
 	tag .code:n =
@@ -251,7 +251,7 @@
 % ^^A    \end{macrocode}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{Blablabla}
+% \section{Work in Progress and other blablablas}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %    \begin{macrocode}
@@ -292,7 +292,39 @@
 %  \begin{macro}{\bla}
 %    \begin{macrocode}
 
+\int_new:Nn \c__yoin_eighteen_int { 18 }
 
+\file_if_exist:nTF { shellesc.sty } {
+	\RequirePackage { shellesc }
+} {
+	\def\ShellEscape { \immediate \write 18 { #1 } }
+}
+
+\cs_new_protected:Nn \__yoin_yoinshell_shellescape:n {
+	\ShellEscape { #1 }
+}
+
+\cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
+	\group_begin:
+	\keys_set { yoin / runforeach } { #1 }
+	\group_end:
+}
+
+\cs_new_protected:Nn \yoin_yoinshell_begin:n {
+	\group_begin:
+	\DeclareDocumentCommand \RunForEach { o m } { \yoin_yoinshell_runforeach:nn { #1 } { #2 } }
+	\DeclareDocumentCommand \Run { o m } { \yoin_yoinshell_run:nn { #1 } { #2 } }
+}
+
+\cs_new_protected:Nn \yoin_yoinshell_end: {
+	\group_end:
+}
+
+\NewDocumentEnvironment { yoinshell } { O{} } {
+	\yoin_yoinshell_begin:n { #1 }
+} {
+	\yoin_yoinshell_end:
+}
 
 \cs_new_protected:Nn \yoin_keys_set_from_file:nn {
 	\tl_set_from_file:Nnn \l_tmpa_tl { } { #2 }
