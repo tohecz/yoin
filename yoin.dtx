@@ -76,6 +76,7 @@
 %
 % \begin{macrocode}
 %<*package>
+%<@@=yoin>
 \RequirePackage{expl3,l3keys2e,xparse}
 \ProvidesExplPackage{yoin}{2016/02/28}{v0.0.1}{Joining articles into issues}
 %    \end{macrocode}
@@ -88,8 +89,8 @@
 %    Globally append \T{clist} \p2 to \T{seq} \p1.
 %    \begin{macrocode}
 \cs_new_protected:Nn \yoin_seq_gappend_clist:Nn {
-	\seq_set_from_clist:Nn \l__yoin_tmpa_seq { #2 }
-	\seq_gconcat:NNN #1 #1 \l__yoin_tmpa_seq
+	\seq_set_from_clist:Nn \l_@@_tmpa_seq { #2 }
+	\seq_gconcat:NNN #1 #1 \l_@@_tmpa_seq
 }
 %    \end{macrocode}
 %    \end{macro}
@@ -191,7 +192,7 @@
 %    \end{macrocode}
 %    \begin{macrocode}
 \cs_new:Nn \yoin_article_prop:n {
-	g__yoin_article_#1_prop
+	g_@@_article_#1_prop
 }
 \cs_generate_variant:Nn \yoin_article_prop:n { V }
 %    \end{macrocode}
@@ -200,11 +201,11 @@
 % Note that if an article is added twice, an error is issued, if the error is ignored, the article is not added but
 %  the properties are set.
 %    \begin{macrocode}
-\tl_new:N \l__yoin_yoinadd_currentarticle_tl
+\tl_new:N \l_@@_yoinadd_currentarticle_tl
 %    \end{macrocode}
 %    \begin{macrocode}
-\cs_new_protected:Nn \__yoin_yoinadd_storekey:nn {
-	\prop_gput:cnn { \yoin_article_prop:V \l__yoin_yoinadd_currentarticle_tl } { #1 } { #2 }
+\cs_new_protected:Nn \@@_yoinadd_storekey:nn {
+	\prop_gput:cnn { \yoin_article_prop:V \l_@@_yoinadd_currentarticle_tl } { #1 } { #2 }
 }
 %    \end{macrocode}
 %    \begin{macrocode}
@@ -215,7 +216,7 @@
 		\seq_gput_right:Nn \g_yoin_articles_seq { #1 }
 		\prop_new:c { \yoin_article_prop:n { #1 } }
 	}
-	\tl_set:Nn \l__yoin_yoinadd_currentarticle_tl { #1 }
+	\tl_set:Nn \l_@@_yoinadd_currentarticle_tl { #1 }
 	\keys_set:nn { yoin / yoinadd } { #2 }
 }
 %    \end{macrocode}
@@ -234,7 +235,7 @@
 %    \begin{macrocode}
 \clist_map_inline:nn { forceopenany, forceopenright, ignore } {
 	\keys_define:nn { yoin / yoinadd } {
-		#1 .code:n = \__yoin_yoinadd_storekey:nn { #1 } { ##1 },
+		#1 .code:n = \@@_yoinadd_storekey:nn { #1 } { ##1 },
 	}
 }
 %    \end{macrocode}
@@ -242,8 +243,8 @@
 %    \begin{macrocode}
 \keys_define:nn { yoin / yoinadd } {
 	tag .code:n =
-		\__yoin_error_if_tag_undefined:n { #1 }
-		\__yoin_yoinadd_storekey:nn { tag } { #1 }
+		\@@_error_if_tag_undefined:n { #1 }
+		\@@_yoinadd_storekey:nn { tag } { #1 }
 		,
 }
 %    \end{macrocode}
@@ -261,17 +262,17 @@
 \prg_new_protected_conditional:Nnn \yoin_if_flag_defined:n { T, F, TF } {
 	\seq_if_in:NnTF \g_yoin_flags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
 }
-\cs_new_protected:Nn \__yoin_error_if_tag_undefined:n {
+\cs_new_protected:Nn \@@_error_if_tag_undefined:n {
 	\yoin_if_tag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-tag } { #1 } }
 }
-\cs_new_protected:Nn \__yoin_error_if_flag_undefined:n {
+\cs_new_protected:Nn \@@_error_if_flag_undefined:n {
 	\yoin_if_flag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-flag } { #1 } }
 }
 \keys_define:nn { yoin / yoinshell } {
 %    \end{macrocode}
 %    \begin{macrocode}
 	flag .code:n =
-		\__yoin_error_if_flag_undefined:n { #1 }
+		\@@_error_if_flag_undefined:n { #1 }
 		\bool_if:NT \g_yoin_onlyflags_bool {
 			\seq_if_in:NnF \g_yoin_onlyflags_seq { #1 } {
 				\keys_set:nn { yoin / yoinshell } {
@@ -292,7 +293,7 @@
 %  \begin{macro}{\bla}
 %    \begin{macrocode}
 
-\int_new:Nn \c__yoin_eighteen_int { 18 }
+\int_new:Nn \c_@@_eighteen_int { 18 }
 
 \file_if_exist:nTF { shellesc.sty } {
 	\RequirePackage { shellesc }
@@ -300,24 +301,30 @@
 	\def\ShellEscape { \immediate \write 18 { #1 } }
 }
 
-\cs_new_protected:Nn \__yoin_yoinshell_shellescape:n {
+\cs_new_protected:Nn \@@_yoinshell_shellescape:n {
 	\ShellEscape { #1 }
 }
 
-\tl_new:N \l__yoin_yoinshell_runforarticle_tag_tl
-\tl_new:N \l__yoin_yoinshell_runforeach_onlytag_tl
-\tl_new:N \c__yoin_q_no_value_tl { \q_no_value }
+\tl_new:N \l_@@_yoinshell_runforarticle_tag_tl
+\tl_new:N \l_@@_yoinshell_runforeach_onlytag_tl
 
-\cs_new_protected:Nn \__yoin_yoinshell_runforarticle:n {
-	\prop_get:cnN { \yoin_article_prop:n { #1 } } { tag } \__yoin_yoinshell_runforarticle_tag
+\cs_new_protected:Nn \@@_yoinshell_runforarticle:n {
+	\prop_get:cnN { \yoin_article_prop:n { #1 } } { tag } \l_@@_yoinshell_runforarticle_tag_tl
 	\bool_if_p:n {
+		\quark_if_no_value_p:N \l_@@_yoinshell_runforarticle_tag_tl
+		||
+		\quark_if_no_value_p:N \l_@@_yoinshell_runforeach_onlytag_tl
+		||
+		\tl_if_eq_p:NN \l_@@_yoinshell_runforeach_onlytag_tl \l_@@_yoinshell_runforarticle_tag_tl
 	}
+	
+	\fi:
 }
 
 \cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
 	\group_begin:
 	\keys_set { yoin / runforeach } { #1 }
-	\seq_map_function:NN \g_yoin_articles_seq \__yoin_yoinshell_runforarticle
+	\seq_map_function:NN \g_yoin_articles_seq \@@_yoinshell_runforarticle
 	\group_end:
 }
 
