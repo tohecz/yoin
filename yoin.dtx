@@ -304,9 +304,20 @@
 	\ShellEscape { #1 }
 }
 
+\tl_new:N \l__yoin_yoinshell_runforarticle_tag_tl
+\tl_new:N \l__yoin_yoinshell_runforeach_onlytag_tl
+\tl_new:N \c__yoin_q_no_value_tl { \q_no_value }
+
+\cs_new_protected:Nn \__yoin_yoinshell_runforarticle:n {
+	\prop_get:cnN { \yoin_article_prop:n { #1 } } { tag } \__yoin_yoinshell_runforarticle_tag
+	\bool_if_p:n {
+	}
+}
+
 \cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
 	\group_begin:
 	\keys_set { yoin / runforeach } { #1 }
+	\seq_map_function:NN \g_yoin_articles_seq \__yoin_yoinshell_runforarticle
 	\group_end:
 }
 
