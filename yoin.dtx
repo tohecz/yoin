@@ -376,7 +376,6 @@
 }
 
 \cs_new_protected:Nn \@@_yoinshell_runforarticle:nn {
-	\prop_log:c { \yoin_article_prop:n { #1 } } 
 	\prop_get:cnN { \yoin_article_prop:n { #1 } } { tag } \l_@@_yoinshell_runforarticle_tag_tl
 	\bool_if:nT {
 		\quark_if_no_value_p:N \l_@@_yoinshell_runforarticle_tag_tl
