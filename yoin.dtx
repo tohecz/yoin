@@ -77,7 +77,9 @@
 % \begin{macrocode}
 %<*package>
 %<@@=yoin>
-\RequirePackage{expl3,l3keys2e,xparse}
+\RequirePackage{expl3,l3keys2e,l3regex,xparse}
+\RequirePackage{zref-totpages}
+\RequirePackage[abspath]{currfile}
 \ProvidesExplPackage{yoin}{2016/02/28}{v0.0.1}{Joining articles into issues}
 %    \end{macrocode}
 %
@@ -112,6 +114,9 @@
 \seq_new:N \g_yoin_tags_seq
 \seq_new:N \g_yoin_onlyflags_seq
 \seq_new:N \g_yoin_onlytags_seq
+%    \end{macrocode}
+%    \begin{macrocode}
+\tl_new:N \g_yoin_parent_tl
 %    \end{macrocode}
 %    \begin{macrocode}
 \msg_new:nnnn { yoin } { unknown-flag }
@@ -159,6 +164,10 @@
 		\seq_gset_from_clist:Nn \g_yoin_onlytags_seq { #1 }
 		\bool_gset_true:N \g_yoin_onlytags_bool
 		,
+%    \end{macrocode}
+% Key with a simple \T{tl} value (goes together with \T{article}):
+%    \begin{macrocode}
+	parent .tl_gset:N = \g_yoin_parent_tl
 %    \end{macrocode}
 %    \begin{macrocode}
 }
@@ -257,7 +266,7 @@
 % ^^A    \end{macrocode}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{Work in Progress and other blablablas}
+% \section{Conditionals for checking the existence of tags and flags}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %    \begin{macrocode}
@@ -273,6 +282,14 @@
 \cs_new_protected:Nn \@@_error_if_flag_undefined:n {
 	\yoin_if_flag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-flag } { #1 } }
 }
+%    \end{macrocode}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Environment yoinshell}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Key--value interface to \T{yoinshell}
+%    \begin{macrocode}
 \keys_define:nn { yoin / yoinshell } {
 
 	flag .code:n =
@@ -291,57 +308,20 @@
 
 }
 %    \end{macrocode}
-%
-%  \begin{macro}{\bla}
+% A reasonable shell escape (we use its expandable variant
 %    \begin{macrocode}
-
-\keys_define:nn { yoin / runforeach } {
-	
-	onlytag .code:n =
-		\@@_error_if_tag_undefined:n { #1 }
-		\tl_set:Nn \l_@@_yoinshell_runforeach_onlytag_tl { #1 }
-		,
-	
-}
-
-\int_const:Nn \c_@@_eighteen_int { 18 }
-
 \file_if_exist:nTF { shellesc.sty } {
 	\RequirePackage { shellesc }
 } {
-	\def\ShellEscape #1 { \immediate \write 18 { #1 } }
+	\def \ShellEscape #1 { \immediate \write 18 { #1 } }
 }
-
 \cs_new_protected:Nn \@@_yoinshell_shellescape:n {
 	\ShellEscape { #1 }
 }
 \cs_generate_variant:Nn \@@_yoinshell_shellescape:n { x }
-
-\tl_new:N \l_@@_yoinshell_runforarticle_tag_tl
-\tl_new:N \l_@@_yoinshell_runforeach_onlytag_tl
-\tl_set:Nn \l_@@_yoinshell_runforeach_onlytag_tl { \q_no_value }
-
-\cs_new_protected:Nn \@@_yoinshell_runforarticle:nn {
-	\prop_get:cnN { \yoin_article_prop:n { #1 } } { tag } \l_@@_yoinshell_runforarticle_tag_tl
-	\bool_if:nT {
-		\quark_if_no_value_p:N \l_@@_yoinshell_runforarticle_tag_tl
-		||
-		\quark_if_no_value_p:N \l_@@_yoinshell_runforeach_onlytag_tl
-		||
-		\tl_if_eq_p:NN \l_@@_yoinshell_runforeach_onlytag_tl \l_@@_yoinshell_runforarticle_tag_tl
-	}{
-		\DeclareExpandableDocumentCommand \Article {} { #1 }
-		\@@_yoinshell_shellescape:x { #2 }
-	}
-}
-
-\cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
-	\group_begin:
-	\keys_set:nn { yoin / runforeach } { #1 }
-	\seq_map_inline:Nn \g_yoin_articles_seq { \@@_yoinshell_runforarticle:nn { ##1 } { #2 } }
-	\group_end:
-}
-
+%    \end{macrocode}
+% Environment \T{yoinshell}:
+%    \begin{macrocode}
 \cs_new_protected:Nn \yoin_yoinshell_begin:n {
 	\group_begin:
 	\DeclareDocumentCommand \RunForEach { O{} m } { \yoin_yoinshell_runforeach:nn { ##1 } { ##2 } }
@@ -358,13 +338,108 @@
 } {
 	\yoin_yoinshell_end:
 }
+%    \end{macrocode}
+% \T{\\RunForEach}
+%    \begin{macrocode}
+\tl_new:N \l_@@_yoinshell_runforarticle_tag_tl
+\tl_new:N \l_@@_yoinshell_runforeach_onlytag_tl
+\tl_set:Nn \l_@@_yoinshell_runforeach_onlytag_tl { \q_no_value }
 
+\keys_define:nn { yoin / runforeach } {
+	
+	onlytag .code:n =
+		\@@_error_if_tag_undefined:n { #1 }
+		\tl_set:Nn \l_@@_yoinshell_runforeach_onlytag_tl { #1 }
+		,
+	
+}
+
+\cs_new_protected:Nn \@@_yoinshell_runforarticle:nn {
+	\prop_get:cnN { \yoin_article_prop:n { #1 } } { tag } \l_@@_yoinshell_runforarticle_tag_tl
+	\bool_if:nT {
+		\quark_if_no_value_p:N \l_@@_yoinshell_runforarticle_tag_tl
+		||
+		\quark_if_no_value_p:N \l_@@_yoinshell_runforeach_onlytag_tl
+		||
+		\tl_if_eq_p:NN \l_@@_yoinshell_runforeach_onlytag_tl \l_@@_yoinshell_runforarticle_tag_tl
+	}{
+		\DeclareExpandableDocumentCommand \Article { } { #1 }
+		\@@_yoinshell_shellescape:n { #2 }
+	}
+}
+
+\cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
+	\group_begin:
+	\keys_set:nn { yoin / runforeach } { #1 }
+	\seq_map_inline:Nn \g_yoin_articles_seq { \@@_yoinshell_runforarticle:nn { ##1 } { #2 } }
+	\group_end:
+}
+%    \end{macrocode}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Article setting stuff}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Information to be stored in an auxiliary file.
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_article_write:n {
+	\immediate \write \@auxout { \token_to_str:N \@writefile { yoin } { #1 } }
+}
+
+\cs_new_protected:Nn \@@_article_write_keyval:nn {
+	\@@_article_write:n { #1 ~ = ~ #2 , }
+}
+\cs_generate_variant:Nn \@@_article_write_keyval:nn { nx }
+
+\cs_new_protected:Nn \yoin_article_write_meta:nn {
+	\@@_article_write_keyval:nn { meta-#1 } { #2 }
+}
+
+\cs_new_protected:Nn \yoin_article_write_keys: {
+	\@@_article_write_keyval:nx { jobname } { \jobname }
+	\@@_article_write_keyval:nx { totpages } { \ztotpages }
+	\@@_article_write_keyval:nx { currdir } { \l_yoin_article_currdir_tl }
+}
+
+\tl_new:N \l_@@_tmpa_tl
+\seq_new:N \l_@@_tmpa_seq
+\tl_new:N \l_yoin_article_currdir_tl
+\cs_new_protected:Nn \yoin_article_getcurrdir:N {
+	\tl_set:Nx \l_@@_tmpa_tl { \currfileabsdir }
+	\cs_generate_variant:Nn \regex_extract_once:nnNF { nV }
+	\regex_extract_once:nVNF { /([^/]+)/\Z } \l_@@_tmpa_tl \l_@@_tmpa_seq { \error }
+	\seq_get_right:NN \l_@@_tmpa_seq #1
+}
+
+\AtBeginDocument{ \yoin_atbegindocument: }
+
+\cs_new_protected:Nn \yoin_atbegindocument: {
+	\expandafter \newwrite \csname tf@yoin\endcsname
+	\bool_if:NTF \g_yoin_article_bool {
+		\yoin_article_getcurrdir:N \l_yoin_article_currdir_tl
+		\immediate \openout \csname tf@yoin\endcsname \l_yoin_article_currdir_tl .yoin\relax
+		\yoin_article_write_keys:
+	} {
+		\immediate \openout \csname tf@yoin\endcsname \jobname .yoin\relax
+	}
+}
+
+%    \end{macrocode}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Experimental}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%    \begin{macrocode}
 \cs_new_protected:Nn \yoin_keys_set_from_file:nn {
 	\tl_set_from_file:Nnn \l_tmpa_tl { } { #2 }
 	\keys_set:nV { #1 } \l_tmpa_tl
 }
 \cs_generate_variant:Nn \keys_set:nn { nV }
-
+%    \end{macrocode}
+%
+%  \begin{macro}{\bla}
+%    \begin{macrocode}
 \cs_new:Nn \yoin_blabla: {
 	Blabla
 }
