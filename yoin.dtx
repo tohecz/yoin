@@ -102,6 +102,7 @@
 % First, we define the variables to store the keys.
 %    \begin{macrocode}
 \bool_new:N \g_yoin_subprocess_bool
+\bool_new:N \g_yoin_article_bool
 \bool_new:N \g_yoin_dryrun_bool
 \bool_new:N \g_yoin_onlyflags_bool
 \bool_new:N \g_yoin_onlytags_bool
@@ -130,6 +131,10 @@
 %    \begin{macrocode}
 	dryrun .bool_gset:N = \g_yoin_dryrun_bool,
 	dryrun .initial:n = { false },
+%    \end{macrocode}
+%    \begin{macrocode}
+	article .bool_gset:N = \g_yoin_article_bool,
+	article .initial:n = { false },
 %    \end{macrocode}
 %    \begin{macrocode}
 	subprocess .bool_gset:N = \g_yoin_subprocess_bool,
@@ -163,7 +168,7 @@
 % We \emph{do not want to process any options given to the class}.
 % Whence \T{\\ProcessKeysPackageOptions} and not \T{\\ProcessKeysOptions}.
 %    \begin{macrocode}
-\ProcessKeysPackageOptions { ctuthesis }
+\ProcessKeysPackageOptions { yoin / general }
 %    \end{macrocode}
 %
 % Allow keys to be set later. We define both a \LaTeX3 interface and an xparse UI wrapper.
@@ -269,8 +274,7 @@
 	\yoin_if_flag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-flag } { #1 } }
 }
 \keys_define:nn { yoin / yoinshell } {
-%    \end{macrocode}
-%    \begin{macrocode}
+
 	flag .code:n =
 		\@@_error_if_flag_undefined:n { #1 }
 		\bool_if:NT \g_yoin_onlyflags_bool {
@@ -281,57 +285,68 @@
 			}
 		}
 		,
-%    \end{macrocode}
-%    \begin{macrocode}
+
 	ignore .bool_set:N = \l_yoin_yoinshell_ignore_bool,
 	ignore .initial:n = { false },
-%    \end{macrocode}
-%    \begin{macrocode}
+
 }
 %    \end{macrocode}
 %
 %  \begin{macro}{\bla}
 %    \begin{macrocode}
 
-\int_new:Nn \c_@@_eighteen_int { 18 }
+\keys_define:nn { yoin / runforeach } {
+	
+	onlytag .code:n =
+		\@@_error_if_tag_undefined:n { #1 }
+		\tl_set:Nn \l_@@_yoinshell_runforeach_onlytag_tl { #1 }
+		,
+	
+}
+
+\int_const:Nn \c_@@_eighteen_int { 18 }
 
 \file_if_exist:nTF { shellesc.sty } {
 	\RequirePackage { shellesc }
 } {
-	\def\ShellEscape { \immediate \write 18 { #1 } }
+	\def\ShellEscape #1 { \immediate \write 18 { #1 } }
 }
 
 \cs_new_protected:Nn \@@_yoinshell_shellescape:n {
 	\ShellEscape { #1 }
 }
+\cs_generate_variant:Nn \@@_yoinshell_shellescape:n { x }
 
 \tl_new:N \l_@@_yoinshell_runforarticle_tag_tl
 \tl_new:N \l_@@_yoinshell_runforeach_onlytag_tl
+\tl_set:Nn \l_@@_yoinshell_runforeach_onlytag_tl { \q_no_value }
 
-\cs_new_protected:Nn \@@_yoinshell_runforarticle:n {
+\cs_new_protected:Nn \@@_yoinshell_runforarticle:nn {
 	\prop_get:cnN { \yoin_article_prop:n { #1 } } { tag } \l_@@_yoinshell_runforarticle_tag_tl
-	\bool_if_p:n {
+	\bool_if:nT {
 		\quark_if_no_value_p:N \l_@@_yoinshell_runforarticle_tag_tl
 		||
 		\quark_if_no_value_p:N \l_@@_yoinshell_runforeach_onlytag_tl
 		||
 		\tl_if_eq_p:NN \l_@@_yoinshell_runforeach_onlytag_tl \l_@@_yoinshell_runforarticle_tag_tl
+	}{
+		\DeclareExpandableDocumentCommand \Article {} { #1 }
+		\@@_yoinshell_shellescape:x { #2 }
 	}
-	
-	\fi:
 }
 
 \cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
 	\group_begin:
-	\keys_set { yoin / runforeach } { #1 }
-	\seq_map_function:NN \g_yoin_articles_seq \@@_yoinshell_runforarticle
+	\keys_set:nn { yoin / runforeach } { #1 }
+	\seq_map_inline:Nn \g_yoin_articles_seq { \@@_yoinshell_runforarticle:nn { ##1 } { #2 } }
 	\group_end:
 }
 
 \cs_new_protected:Nn \yoin_yoinshell_begin:n {
 	\group_begin:
-	\DeclareDocumentCommand \RunForEach { o m } { \yoin_yoinshell_runforeach:nn { #1 } { #2 } }
-	\DeclareDocumentCommand \Run { o m } { \yoin_yoinshell_run:nn { #1 } { #2 } }
+	\DeclareDocumentCommand \RunForEach { O{} m } { \yoin_yoinshell_runforeach:nn { ##1 } { ##2 } }
+	\DeclareDocumentCommand \Run { O{} m } { \yoin_yoinshell_run:nn { ##1 } { ##2 } }
+	\keys_set:nn { yoin / yoinshell } { #1 }
 }
 
 \cs_new_protected:Nn \yoin_yoinshell_end: {
