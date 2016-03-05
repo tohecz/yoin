@@ -1,7 +1,7 @@
 # yoin
 
 The `yoin` package (`yo` `join`) is to-become my humble attempt to create
- a package that allows for easy workflow for managing compiling seperate
+ a package that allows for easy workflow for managing compiling separate
  articles to journal issues.
 The idea is to provide a way how to do this so that one does not need to run
  any external scripts or tools.
