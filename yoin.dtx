@@ -199,16 +199,20 @@
 % The key--value interface. In this case, we basically only store the keys for each article in a \T{prop}.
 % First, an interface for setting the keys for the articles.
 % \T{\\g_yoin_articles_seq} stores the list of the existing articles.
-% \T{\\yoin_article_prop:n} returns the name of the \T{prop} for the given article;
+% \T{\\yoin_yoinadd_prop:n} returns the name of the \T{prop} for the given article;
 %  \emph{no check for existence is done at this place.}
 %    \begin{macrocode}
 \seq_new:N \g_yoin_articles_seq
 %    \end{macrocode}
 %    \begin{macrocode}
-\cs_new:Nn \yoin_article_prop:n {
+\cs_new:Nn \yoin_yoinadd_prop:n {
 	g_@@_article_#1_prop
 }
-\cs_generate_variant:Nn \yoin_article_prop:n { V }
+\cs_generate_variant:Nn \yoin_yoinadd_prop:n { V }
+\cs_new:Nn \yoin_yoinadd_prop_item:nn {
+	\prop_item:cn { \yoin_yoinadd_prop:n { #1 } } { #2 }
+}
+\cs_generate_variant:Nn \yoin_yoinadd_prop_item:nn { V }
 %    \end{macrocode}
 % For processing \T{\\yoinAdd}, we first set up a \T{tl} to contain the name of the article, then create the \T{prop},
 %  and finally use \T{l3keys} to fill in the \T{prop}.
@@ -219,7 +223,7 @@
 %    \end{macrocode}
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_yoinadd_storekey:nn {
-	\prop_gput:cnn { \yoin_article_prop:V \l_@@_yoinadd_currentarticle_tl } { #1 } { #2 }
+	\prop_gput:cnn { \yoin_yoinadd_prop:V \l_@@_yoinadd_currentarticle_tl } { #1 } { #2 }
 }
 \cs_generate_variant:Nn \@@_yoinadd_storekey:nn { x , V }
 %    \end{macrocode}
@@ -230,7 +234,7 @@
 		\msg_error:nnn { yoin } { yoinadd / duplicatearticle } { #1 }
 	} {
 		\seq_gput_right:Nn \g_yoin_articles_seq { #1 }
-		\prop_new:c { \yoin_article_prop:n { #1 } }
+		\prop_new:c { \yoin_yoinadd_prop:n { #1 } }
 		\@@_yoinadd_storekey:nn { article } { #1 }
 		\keys_set:nn { yoin / yoinadd } { #2 }
 		\file_if_exist:nT { #1 / #1 .yoin } {
@@ -371,12 +375,12 @@
 
 \tl_new:N \@@_yoinshell_runforarticle_tmpa_tl
 \cs_new_protected:Nn \@@_yoinshell_runforarticle_keyfromprop:nNn {
-	\prop_get:cnN { \yoin_article_prop:n { #1 } } { #3 } \l_@@_yoinshell_runforarticle_tmpa_tl
+	\prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { #3 } \l_@@_yoinshell_runforarticle_tmpa_tl
 	\let #2 \l_@@_yoinshell_runforarticle_tmpa_tl
 }
 
 \cs_new_protected:Nn \@@_yoinshell_runforarticle:nn {
-	\prop_get:cnN { \yoin_article_prop:n { #1 } } { tag } \l_@@_yoinshell_runforarticle_tag_tl
+	\prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { tag } \l_@@_yoinshell_runforarticle_tag_tl
 	\bool_if:nT {
 		\quark_if_no_value_p:N \l_@@_yoinshell_runforarticle_tag_tl
 		||
@@ -423,6 +427,7 @@
 	\@@_article_write_keyval:nx { jobname } { \jobname }
 	\@@_article_write_keyval:nx { totpages } { \ztotpages }
 	\@@_article_write_keyval:nx { currdir } { \l_yoin_article_currdir_tl }
+	\@@_article_write_keyval:nx { firstpage } { \int_use:N \l_yoin_article_firstpage_int }
 }
 
 \prop_new:N \l_@@_article_readkeys_prop
@@ -468,14 +473,35 @@
 	\bool_if:NTF \g_yoin_article_bool {
 		\yoin_article_getcurrdir:N \l_yoin_article_currdir_tl
 		\immediate \openout \csname tf@yoin\endcsname \l_yoin_article_currdir_tl .yoin\relax
-		\yoin_article_write_keys:
 		\yoin_article_read_keys:
 		\setcounter { page } { \l_yoin_article_firstpage_int }
+		\yoin_article_write_keys:
 	} {
 		\immediate \openout \csname tf@yoin\endcsname \jobname .yoin\relax
 	}
 }
-
+%    \end{macrocode}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{yoinProcess}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%    \begin{macrocode}
+\int_new:N \g_yoin_page_int
+\iow_new:N \g_@@_yoinprocess_stream
+\cs_new_protected:Nn \yoin_yoinprocess:n {
+	\keys_set:nn { yoin / yoinprocess } { #1 }	
+	\seq_map_inline:Nn \g_yoin_articles_seq {
+		\cleardoublepage
+		\int_gset:Nn \g_yoin_page_int { \value { page } }
+		\includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
+		\iow_open:Nn \g_@@_yoinprocess_stream { ##1 .yoin }
+		\iow_now:Nx \g_@@_yoinprocess_stream { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }
+		\iow_close:N \g_@@_yoinprocess_stream
+		\int_gadd:Nn \g_yoin_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
+	}
+}
+\DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
 %    \end{macrocode}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
