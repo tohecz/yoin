@@ -50,6 +50,18 @@
 \msg_new:nnnn { yoin } { unknown-tag }
    { The ~ tag ~ `#1' ~ is ~ unknown ~ to ~ `yoin'. }
    { You ~ either ~ misspelled ~ it ~ or ~forgot ~ to ~ declare ~ it. }
+\prg_new_protected_conditional:Nnn \yoin_if_tag_defined:n { T, F, TF } {
+   \seq_if_in:NnTF \g_yoin_tags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
+}
+\prg_new_protected_conditional:Nnn \yoin_if_flag_defined:n { T, F, TF } {
+   \seq_if_in:NnTF \g_yoin_flags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
+}
+\cs_new_protected:Nn \__yoin_error_if_tag_undefined:n {
+   \yoin_if_tag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-tag } { #1 } }
+}
+\cs_new_protected:Nn \__yoin_error_if_flag_undefined:n {
+   \yoin_if_flag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-flag } { #1 } }
+}
 \keys_define:nn { yoin / general } {
    dryrun .bool_gset:N = \g_yoin_dryrun_bool,
    dryrun .initial:n = { false },
@@ -131,20 +143,6 @@
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\prg_new_protected_conditional:Nnn \yoin_if_tag_defined:n { T, F, TF } {
-   \seq_if_in:NnTF \g_yoin_tags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
-}
-\prg_new_protected_conditional:Nnn \yoin_if_flag_defined:n { T, F, TF } {
-   \seq_if_in:NnTF \g_yoin_flags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
-}
-\cs_new_protected:Nn \__yoin_error_if_tag_undefined:n {
-   \yoin_if_tag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-tag } { #1 } }
-}
-\cs_new_protected:Nn \__yoin_error_if_flag_undefined:n {
-   \yoin_if_flag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-flag } { #1 } }
-}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \keys_define:nn { yoin / yoinshell } {
    flag .code:n =
       \__yoin_error_if_flag_undefined:n { #1 }
@@ -189,22 +187,27 @@
 \tl_new:N \l__yoin_yoinshell_runforarticle_tag_tl
 \tl_new:N \l__yoin_yoinshell_runforeach_onlytag_tl
 \tl_set:Nn \l__yoin_yoinshell_runforeach_onlytag_tl { \q_no_value }
-
 \keys_define:nn { yoin / runforeach } {
-
    onlytag .code:n =
       \__yoin_error_if_tag_undefined:n { #1 }
       \tl_set:Nn \l__yoin_yoinshell_runforeach_onlytag_tl { #1 }
       ,
-
 }
-
 \tl_new:N \__yoin_yoinshell_runforarticle_tmpa_tl
-\cs_new_protected:Nn \__yoin_yoinshell_runforarticle_keyfromprop:nNn {
-   \prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { #3 } \l__yoin_yoinshell_runforarticle_tmpa_tl
-   \let #2 \l__yoin_yoinshell_runforarticle_tmpa_tl
+\cs_new_protected:Nn \__yoin_yoinshell_runforarticle_keyfromprop:nnN {
+   \prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { #2 } \l__yoin_yoinshell_runforarticle_tmpa_tl
+   \quark_if_no_value:NTF \l__yoin_yoinshell_runforarticle_tmpa_tl {
+      \def #3 {}
+   } {
+      \let #3 \l__yoin_yoinshell_runforarticle_tmpa_tl
+   }
 }
-
+\cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
+   \group_begin:
+   \keys_set:nn { yoin / runforeach } { #1 }
+   \seq_map_inline:Nn \g_yoin_yoinadd_seq { \__yoin_yoinshell_runforarticle:nn { ##1 } { #2 } }
+   \group_end:
+}
 \cs_new_protected:Nn \__yoin_yoinshell_runforarticle:nn {
    \prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { tag } \l__yoin_yoinshell_runforarticle_tag_tl
    \bool_if:nT {
@@ -215,18 +218,11 @@
       \tl_if_eq_p:NN \l__yoin_yoinshell_runforeach_onlytag_tl \l__yoin_yoinshell_runforarticle_tag_tl
    }{
       \group_begin:
-      \__yoin_yoinshell_runforarticle_keyfromprop:nNn { #1 } \Article { article }
-      \__yoin_yoinshell_runforarticle_keyfromprop:nNn { #1 } \Jobname { jobname }
+      \__yoin_yoinshell_runforarticle_keyfromprop:nNn { #1 } { article } \Article
+      \__yoin_yoinshell_runforarticle_keyfromprop:nNn { #1 } { jobname } \Jobname
       \__yoin_yoinshell_shellescape:n { #2 }
       \group_end:
    }
-}
-
-\cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
-   \group_begin:
-   \keys_set:nn { yoin / runforeach } { #1 }
-   \seq_map_inline:Nn \g_yoin_yoinadd_seq { \__yoin_yoinshell_runforarticle:nn { ##1 } { #2 } }
-   \group_end:
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -243,7 +239,7 @@
    \__yoin_article_write_keyval:nn { meta-#1 } { #2 }
 }
 
-\cs_new_protected:Nn \yoin_article_write_keys: {
+\cs_new_protected:Nn \yoin_article_writekeys: {
    \__yoin_article_write_keyval:nx { jobname } { \jobname }
    \__yoin_article_write_keyval:nx { totpages } { \ztotpages }
    \__yoin_article_write_keyval:nx { currdir } { \l_yoin_article_currdir_tl }
@@ -270,20 +266,26 @@
       ,
 }
 
-\cs_new_protected:Nn \yoin_article_read_keys: {
-   \file_if_exist:nT { ../ \l_yoin_article_currdir_tl .yoin } {
-      \yoin_keys_set_from_file:nn { yoin / toarticle } { ../ \l_yoin_article_currdir_tl .yoin }
+\bool_new:N \g__yoin_article_readkeys_bool
+\bool_gset_true:N \g__yoin_article_readkeys_bool
+
+\cs_new_protected:Nn \yoin_article_readkeys: {
+   \bool_if:NT \g__yoin_article_readkeys_bool {
+      \file_if_exist:nT { ../ \l_yoin_article_currdir_tl .yoin } {
+         \yoin_keys_set_from_file:nn { yoin / toarticle } { ../ \l_yoin_article_currdir_tl .yoin }
+      }
    }
+   \bool_gset_false:N \g__yoin_article_readkeys_bool
 }
 
-\tl_new:N \l__yoin_tmpa_tl
-\seq_new:N \l__yoin_tmpa_seq
+\tl_new:N \l__yoin_article_tmpa_tl
+\seq_new:N \l__yoin_article_tmpa_seq
 \tl_new:N \l_yoin_article_currdir_tl
 \cs_new_protected:Nn \yoin_article_getcurrdir:N {
-   \tl_set:Nx \l__yoin_tmpa_tl { \currfileabsdir }
+   \tl_set:Nx \l__yoin_article_tmpa_tl { \currfileabsdir }
    \cs_generate_variant:Nn \regex_extract_once:nnNF { nV }
-   \regex_extract_once:nVNF { /([^/]+)/\Z } \l__yoin_tmpa_tl \l__yoin_tmpa_seq { \error }
-   \seq_get_right:NN \l__yoin_tmpa_seq #1
+   \regex_extract_once:nVNF { /([^/]+)/\Z } \l__yoin_article_tmpa_tl \l__yoin_article_tmpa_seq { \error }
+   \seq_get_right:NN \l__yoin_article_tmpa_seq #1
 }
 
 \AtBeginDocument{ \yoin_atbegindocument: }
@@ -293,9 +295,9 @@
    \bool_if:NTF \g_yoin_article_bool {
       \yoin_article_getcurrdir:N \l_yoin_article_currdir_tl
       \immediate \openout \csname tf@yoin\endcsname \l_yoin_article_currdir_tl .yoin\relax
-      \yoin_article_read_keys:
+      \yoin_article_readkeys:
       \setcounter { page } { \l_yoin_article_firstpage_int }
-      \yoin_article_write_keys:
+      \yoin_article_writekeys:
    } {
       \immediate \openout \csname tf@yoin\endcsname \jobname .yoin\relax
    }
@@ -317,6 +319,8 @@
    }
 }
 \DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cs_new:Nn \yoin_blabla: {

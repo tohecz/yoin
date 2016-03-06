@@ -12,7 +12,7 @@
 %<*driver>
 \documentclass{l3doc}
 
-\usepackage[vmargin=0.8in,hmargin={2.5in,0.8in},a4paper,landscape]{geometry}
+\usepackage[vmargin=0.8in,hmargin={2.5in,0.8in},marginparsep=0.1in,marginparwidth=2.3in,a4paper,landscape]{geometry}
 \usepackage{lmodern,anttor}
 \usepackage{xcolor}
 
@@ -160,6 +160,23 @@
 \msg_new:nnnn { yoin } { unknown-tag }
 	{ The ~ tag ~ `#1' ~ is ~ unknown ~ to ~ `yoin'. }
 	{ You ~ either ~ misspelled ~ it ~ or ~forgot ~ to ~ declare ~ it. }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ \yoin_if_tag_defined:n , \yoin_if_flag_defined:n }
+% Conditionals for checking whether a tag/flag was defined.
+%    \begin{macrocode}
+\prg_new_protected_conditional:Nnn \yoin_if_tag_defined:n { T, F, TF } {
+	\seq_if_in:NnTF \g_yoin_tags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
+}
+\prg_new_protected_conditional:Nnn \yoin_if_flag_defined:n { T, F, TF } {
+	\seq_if_in:NnTF \g_yoin_flags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
+}
+\cs_new_protected:Nn \@@_error_if_tag_undefined:n {
+	\yoin_if_tag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-tag } { #1 } }
+}
+\cs_new_protected:Nn \@@_error_if_flag_undefined:n {
+	\yoin_if_flag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-flag } { #1 } }
+}
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ yoin / general }
@@ -321,6 +338,7 @@
 	{ The ~ article ~ "#1" ~ has ~ no ~ file "#1/#1.yoin" ~ and ~ was ~ not ~ properly ~ set ~ up.}
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}{ yoin / yoinadd }
 % The keys here are pretty simple; each defined key just stores its value in the \T{prop}.
 % We recall that \T{\#1} is the key and \T{\#\#1} is the value.
 %    \begin{macrocode}
@@ -338,31 +356,13 @@
 		\@@_yoinadd_storekey:nn { tag } { #1 }
 		,
 }
+%    \end{macrocode}
+% \end{macro}
+%    \begin{macrocode}
 \keys_define:nn { yoin / yoinaddfromarticle } {
 	unknown .code:n =
 		\@@_yoinadd_storekey:Vn \l_keys_key_tl { #1 }
 		,
-}
-%    \end{macrocode}
-% ^^A    \begin{macrocode}
-% ^^A    \end{macrocode}
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{Conditionals for checking the existence of tags and flags}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%    \begin{macrocode}
-\prg_new_protected_conditional:Nnn \yoin_if_tag_defined:n { T, F, TF } {
-	\seq_if_in:NnTF \g_yoin_tags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
-}
-\prg_new_protected_conditional:Nnn \yoin_if_flag_defined:n { T, F, TF } {
-	\seq_if_in:NnTF \g_yoin_flags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
-}
-\cs_new_protected:Nn \@@_error_if_tag_undefined:n {
-	\yoin_if_tag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-tag } { #1 } }
-}
-\cs_new_protected:Nn \@@_error_if_flag_undefined:n {
-	\yoin_if_flag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-flag } { #1 } }
 }
 %    \end{macrocode}
 %
@@ -449,27 +449,61 @@
 }
 %    \end{macrocode}
 % \end{macro}
-% \T{\\RunForEach}
+% The \T{yoinshell} command \T{\\RunForEach}.
+% \begin{macro}{ \l_@@_yoinshell_runforarticle_tag_tl , \l_@@_yoinshell_runforeach_onlytag_tl }
+% First, two \T{tl}s that will store tags: One for the tag of the article,
+%  one that could be passed to \T{\\RunForEach} that is initially set to \T{\\q_no_value}.
 %    \begin{macrocode}
 \tl_new:N \l_@@_yoinshell_runforarticle_tag_tl
 \tl_new:N \l_@@_yoinshell_runforeach_onlytag_tl
 \tl_set:Nn \l_@@_yoinshell_runforeach_onlytag_tl { \q_no_value }
-
-\keys_define:nn { yoin / runforeach } {
-	
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ yoin / runforeach }
+% So far, the only key--val passable to \T{\\RunForEach} is \T{onlytag},
+%  which tests for the tag to be declared and passes it to \T{\\l_@@_yoinshell_runforeach_onlytag_tl}.
+%    \begin{macrocode}
+\keys_define:nn { yoin / runforeach } {	
 	onlytag .code:n =
 		\@@_error_if_tag_undefined:n { #1 }
 		\tl_set:Nn \l_@@_yoinshell_runforeach_onlytag_tl { #1 }
-		,
-	
+		,	
 }
-
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ \@@_yoinshell_runforarticle_keyfromprop:nnN }
+% This macro lets \T{\#3} to the value of property \T{\#2} of article \T{\#1}.
+% It makes it an empty definition if the property is unset.
+%    \begin{macrocode}
 \tl_new:N \@@_yoinshell_runforarticle_tmpa_tl
-\cs_new_protected:Nn \@@_yoinshell_runforarticle_keyfromprop:nNn {
-	\prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { #3 } \l_@@_yoinshell_runforarticle_tmpa_tl
-	\let #2 \l_@@_yoinshell_runforarticle_tmpa_tl
+\cs_new_protected:Nn \@@_yoinshell_runforarticle_keyfromprop:nnN {
+	\prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { #2 } \l_@@_yoinshell_runforarticle_tmpa_tl
+	\quark_if_no_value:NTF \l_@@_yoinshell_runforarticle_tmpa_tl {
+		\def #3 {}
+	} {
+		\let #3 \l_@@_yoinshell_runforarticle_tmpa_tl
+	}
 }
-
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ \@@_yoinshell_runforeach:nn }
+% \T{\\RunForEach} itself just sets the keys (in a group to make things local)
+%  and then calls \T{\\@@_yoinshell_runforarticle:nn} on each article.
+%    \begin{macrocode}
+\cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
+	\group_begin:
+	\keys_set:nn { yoin / runforeach } { #1 }
+	\seq_map_inline:Nn \g_yoin_yoinadd_seq { \@@_yoinshell_runforarticle:nn { ##1 } { #2 } }
+	\group_end:
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ \@@_yoinshell_runforarticle:nn }
+% If the tag passed to \T{onlytag} of \T{\\RunForEach} is identical to the tag of the article
+%  or if any of them is not set, we do what should be done, otherwise nothing is done (the tags do not match).
+% We only extract the \T{prop} to publically available macros like \T{\\Article}, \T{\\Jobname} etc.\@
+% (in a group to make this local), and then run the command in shell escape.
+%    \begin{macrocode}
 \cs_new_protected:Nn \@@_yoinshell_runforarticle:nn {
 	\prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { tag } \l_@@_yoinshell_runforarticle_tag_tl
 	\bool_if:nT {
@@ -480,23 +514,17 @@
 		\tl_if_eq_p:NN \l_@@_yoinshell_runforeach_onlytag_tl \l_@@_yoinshell_runforarticle_tag_tl
 	}{
 		\group_begin:
-		\@@_yoinshell_runforarticle_keyfromprop:nNn { #1 } \Article { article }
-		\@@_yoinshell_runforarticle_keyfromprop:nNn { #1 } \Jobname { jobname }
+		\@@_yoinshell_runforarticle_keyfromprop:nNn { #1 } { article } \Article
+		\@@_yoinshell_runforarticle_keyfromprop:nNn { #1 } { jobname } \Jobname
 		\@@_yoinshell_shellescape:n { #2 }
 		\group_end:
 	}
 }
-
-\cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
-	\group_begin:
-	\keys_set:nn { yoin / runforeach } { #1 }
-	\seq_map_inline:Nn \g_yoin_yoinadd_seq { \@@_yoinshell_runforarticle:nn { ##1 } { #2 } }
-	\group_end:
-}
 %    \end{macrocode}
+% \end{macro}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{Article setting stuff}
+% \section{Article setting stuff (undocumented)}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Information to be stored in an auxiliary file.
@@ -514,7 +542,7 @@
 	\@@_article_write_keyval:nn { meta-#1 } { #2 }
 }
 
-\cs_new_protected:Nn \yoin_article_write_keys: {
+\cs_new_protected:Nn \yoin_article_writekeys: {
 	\@@_article_write_keyval:nx { jobname } { \jobname }
 	\@@_article_write_keyval:nx { totpages } { \ztotpages }
 	\@@_article_write_keyval:nx { currdir } { \l_yoin_article_currdir_tl }
@@ -541,20 +569,26 @@
 		,
 }
 
-\cs_new_protected:Nn \yoin_article_read_keys: {
-	\file_if_exist:nT { ../ \l_yoin_article_currdir_tl .yoin } {
-		\yoin_keys_set_from_file:nn { yoin / toarticle } { ../ \l_yoin_article_currdir_tl .yoin }
+\bool_new:N \g_@@_article_readkeys_bool
+\bool_gset_true:N \g_@@_article_readkeys_bool
+
+\cs_new_protected:Nn \yoin_article_readkeys: {
+	\bool_if:NT \g_@@_article_readkeys_bool {
+		\file_if_exist:nT { ../ \l_yoin_article_currdir_tl .yoin } {
+			\yoin_keys_set_from_file:nn { yoin / toarticle } { ../ \l_yoin_article_currdir_tl .yoin }
+		}
 	}
+	\bool_gset_false:N \g_@@_article_readkeys_bool
 }
 
-\tl_new:N \l_@@_tmpa_tl
-\seq_new:N \l_@@_tmpa_seq
+\tl_new:N \l_@@_article_tmpa_tl
+\seq_new:N \l_@@_article_tmpa_seq
 \tl_new:N \l_yoin_article_currdir_tl
 \cs_new_protected:Nn \yoin_article_getcurrdir:N {
-	\tl_set:Nx \l_@@_tmpa_tl { \currfileabsdir }
+	\tl_set:Nx \l_@@_article_tmpa_tl { \currfileabsdir }
 	\cs_generate_variant:Nn \regex_extract_once:nnNF { nV }
-	\regex_extract_once:nVNF { /([^/]+)/\Z } \l_@@_tmpa_tl \l_@@_tmpa_seq { \error }
-	\seq_get_right:NN \l_@@_tmpa_seq #1
+	\regex_extract_once:nVNF { /([^/]+)/\Z } \l_@@_article_tmpa_tl \l_@@_article_tmpa_seq { \error }
+	\seq_get_right:NN \l_@@_article_tmpa_seq #1
 }
 
 \AtBeginDocument{ \yoin_atbegindocument: }
@@ -564,9 +598,9 @@
 	\bool_if:NTF \g_yoin_article_bool {
 		\yoin_article_getcurrdir:N \l_yoin_article_currdir_tl
 		\immediate \openout \csname tf@yoin\endcsname \l_yoin_article_currdir_tl .yoin\relax
-		\yoin_article_read_keys:
+		\yoin_article_readkeys:
 		\setcounter { page } { \l_yoin_article_firstpage_int }
-		\yoin_article_write_keys:
+		\yoin_article_writekeys:
 	} {
 		\immediate \openout \csname tf@yoin\endcsname \jobname .yoin\relax
 	}
@@ -593,6 +627,13 @@
 	}
 }
 \DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
+%    \end{macrocode}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Conditionals for checking the existence of tags and flags (undocumented)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%    \begin{macrocode}
 %    \end{macrocode}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
