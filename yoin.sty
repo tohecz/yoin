@@ -28,6 +28,11 @@
    \seq_set_from_clist:Nn \l__yoin_tmpa_seq { #2 }
    \seq_gconcat:NNN #1 #1 \l__yoin_tmpa_seq
 }
+\cs_new_protected:Nn \yoin_keys_set_from_file:nn {
+   \tl_set_from_file:Nnn \l_tmpa_tl { } { #2 }
+   \keys_set:nV { #1 } \l_tmpa_tl
+}
+\cs_generate_variant:Nn \keys_set:nn { nV }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bool_new:N \g_yoin_subprocess_bool
@@ -72,7 +77,7 @@
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\seq_new:N \g_yoin_articles_seq
+\seq_new:N \g_yoin_yoinadd_seq
 \cs_new:Nn \yoin_yoinadd_prop:n {
    g__yoin_article_#1_prop
 }
@@ -85,26 +90,29 @@
 \cs_new_protected:Nn \__yoin_yoinadd_storekey:nn {
    \prop_gput:cnn { \yoin_yoinadd_prop:V \l__yoin_yoinadd_currentarticle_tl } { #1 } { #2 }
 }
-\cs_generate_variant:Nn \__yoin_yoinadd_storekey:nn { x , V }
 \cs_new_protected:Nn \yoin_yoinadd:nn {
    \tl_set:Nn \l__yoin_yoinadd_currentarticle_tl { #1 }
-   \seq_if_in:NnTF \g_yoin_articles_seq { #1 } {
-      \msg_error:nnn { yoin } { yoinadd / duplicatearticle } { #1 }
+   \seq_if_in:NnTF \g_yoin_yoinadd_seq { #1 } {
+      \msg_error:nnn { yoin } { yoinadd-duplicatearticle } { #1 }
    } {
-      \seq_gput_right:Nn \g_yoin_articles_seq { #1 }
+      \seq_gput_right:Nn \g_yoin_yoinadd_seq { #1 }
       \prop_new:c { \yoin_yoinadd_prop:n { #1 } }
       \__yoin_yoinadd_storekey:nn { article } { #1 }
       \keys_set:nn { yoin / yoinadd } { #2 }
-      \file_if_exist:nT { #1 / #1 .yoin } {
+      \file_if_exist:nTF { #1 / #1 .yoin } {
          \yoin_keys_set_from_file:nn { yoin / yoinaddfromarticle } { #1 / #1 .yoin }
+      } {
+         \msg_error:nnn { yoin } { yoinadd-dotyoinmissing } { #1 }
       }
    }
 }
 \NewDocumentCommand \yoinAdd { m O{} } {
    \yoin_yoinadd:nn { #1 } { #2 }
 }
-\msg_new:nnn { yoin } { yoinadd / duplicatearticle }
+\msg_new:nnn { yoin } { yoinadd-duplicatearticle }
    { The ~ article ~ "#1" ~ has ~ been ~ already ~ processed ~ by ~ \token_to_str:N \yoinAdd ~.}
+\msg_new:nnn { yoin } { yoinadd-dotyoinmissing }
+   { The ~ article ~ "#1" ~ has ~ no ~ file "#1/#1.yoin" ~ and ~ was ~ not ~ properly ~ set ~ up.}
 \clist_map_inline:nn { forceopenany, forceopenright, ignore } {
    \keys_define:nn { yoin / yoinadd } {
       #1 .code:n = \__yoin_yoinadd_storekey:nn { #1 } { ##1 },
@@ -138,7 +146,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \keys_define:nn { yoin / yoinshell } {
-
    flag .code:n =
       \__yoin_error_if_flag_undefined:n { #1 }
       \bool_if:NT \g_yoin_onlyflags_bool {
@@ -149,10 +156,8 @@
          }
       }
       ,
-
    ignore .bool_set:N = \l_yoin_yoinshell_ignore_bool,
    ignore .initial:n = { false },
-
 }
 \file_if_exist:nTF { shellesc.sty } {
    \RequirePackage { shellesc }
@@ -162,8 +167,7 @@
 \cs_new_protected:Nn \__yoin_yoinshell_shellescape:n {
    \ShellEscape { #1 }
 }
-\cs_generate_variant:Nn \__yoin_yoinshell_shellescape:n { x }
-\cs_new_protected:Nn \yoin_yoinshell_begin:n {
+\cs_new_protected:Nn \__yoin_yoinshell_begin:n {
    \group_begin:
    \keys_set:nn { yoin / yoinshell } { #1 }
    \bool_if:NTF \l_yoin_yoinshell_ignore_bool {
@@ -174,15 +178,13 @@
       \DeclareDocumentCommand \Run { O{} m } { \yoin_yoinshell_run:nn { ##1 } { ##2 } }
    }
 }
-
-\cs_new_protected:Nn \yoin_yoinshell_end: {
+\cs_new_protected:Nn \__yoin_yoinshell_end: {
    \group_end:
 }
-
 \NewDocumentEnvironment { yoinshell } { O{} } {
-   \yoin_yoinshell_begin:n { #1 }
+   \__yoin_yoinshell_begin:n { #1 }
 } {
-   \yoin_yoinshell_end:
+   \__yoin_yoin_yoinshell_end:
 }
 \tl_new:N \l__yoin_yoinshell_runforarticle_tag_tl
 \tl_new:N \l__yoin_yoinshell_runforeach_onlytag_tl
@@ -223,7 +225,7 @@
 \cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
    \group_begin:
    \keys_set:nn { yoin / runforeach } { #1 }
-   \seq_map_inline:Nn \g_yoin_articles_seq { \__yoin_yoinshell_runforarticle:nn { ##1 } { #2 } }
+   \seq_map_inline:Nn \g_yoin_yoinadd_seq { \__yoin_yoinshell_runforarticle:nn { ##1 } { #2 } }
    \group_end:
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -304,7 +306,7 @@
 \iow_new:N \g__yoin_yoinprocess_stream
 \cs_new_protected:Nn \yoin_yoinprocess:n {
    \keys_set:nn { yoin / yoinprocess } { #1 }
-   \seq_map_inline:Nn \g_yoin_articles_seq {
+   \seq_map_inline:Nn \g_yoin_yoinadd_seq {
       \cleardoublepage
       \int_gset:Nn \g_yoin_page_int { \value { page } }
       \includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
@@ -317,11 +319,6 @@
 \DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\cs_new_protected:Nn \yoin_keys_set_from_file:nn {
-   \tl_set_from_file:Nnn \l_tmpa_tl { } { #2 }
-   \keys_set:nV { #1 } \l_tmpa_tl
-}
-\cs_generate_variant:Nn \keys_set:nn { nV }
 \cs_new:Nn \yoin_blabla: {
    Blabla
 }
