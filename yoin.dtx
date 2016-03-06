@@ -116,11 +116,24 @@
 % No checks are done here, nothing like comments could be used, the keys should be separated by a comma
 %  (and spaces of course as needed).
 %    \begin{macrocode}
+\tl_new:N \l_@@_keys_tmpa_tl
 \cs_new_protected:Nn \yoin_keys_set_from_file:nn {
-	\tl_set_from_file:Nnn \l_tmpa_tl { } { #2 }
-	\keys_set:nV { #1 } \l_tmpa_tl
+	\tl_set_from_file:Nnn \l_@@_keys_tmpa_tl { } { #2 }
+	\keys_set:nV { #1 } \l_@@_keys_tmpa_tl
 }
 \cs_generate_variant:Nn \keys_set:nn { nV }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\yoin_keyval_parse_from_file:nn}
+% Read a file \T{\#2} containing a key--value list and set the keys for \T{\#1}.
+% No checks are done here, nothing like comments could be used, the keys should be separated by a comma
+%  (and spaces of course as needed).
+%    \begin{macrocode}
+\cs_new_protected:Nn \yoin_keyval_parse_from_file:NNn {
+	\tl_set_from_file:Nnn \l_@@_keys_tmpa_tl { } { #3 }
+	\keyval_parse:NNV #1 #2 \l_@@_keys_tmpa_tl
+}
+\cs_generate_variant:Nn \keyval_parse:NNn { NNV }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -206,7 +219,7 @@
 %    \end{macrocode}
 % A \T{clist} key is stored in a \T{seq}, also, a corresponding \T{bool} is set true.
 % (The point is, if \T{onlyflags}/\T{onlytags} is not ever set up, we want to know it since
-% we treat it as if we use all flags/tags.
+% we treat it as if we use all flags/tags.)
 %    \begin{macrocode}
 	onlyflags .code:n =
 		\seq_gset_from_clist:Nn \g_yoin_onlyflags_seq { #1 }
@@ -288,11 +301,14 @@
 \tl_new:N \l_@@_yoinadd_currentarticle_tl
 %    \end{macrocode}
 % \end{macro}
-% \begin{macro}{ \@@_yoinadd_storekey:nn }
-% Internal macro for storing a key in the prop.
+% \begin{macro}{ \@@_yoinadd_storekey:nn , \@@_yoinadd_storekey:n }
+% Internal macro for storing a key in the prop. The one-parameter variant sets the value of the key empty.
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_yoinadd_storekey:nn {
 	\prop_gput:cnn { \yoin_yoinadd_prop:V \l_@@_yoinadd_currentarticle_tl } { #1 } { #2 }
+}
+\cs_new_protected:Nn \@@_yoinadd_storekey:n {
+	\prop_gput:cnn { \yoin_yoinadd_prop:V \l_@@_yoinadd_currentarticle_tl } { #1 } { }
 }
 %    \end{macrocode}
 % \end{macro}
@@ -316,7 +332,10 @@
 		\@@_yoinadd_storekey:nn { article } { #1 }
 		\keys_set:nn { yoin / yoinadd } { #2 }
 		\file_if_exist:nTF { #1 / #1 .yoin } {
-			\yoin_keys_set_from_file:nn { yoin / yoinaddfromarticle } { #1 / #1 .yoin }
+			\yoin_keyval_parse_from_file:NNn
+				\@@_yoinadd_storekey:n
+				\@@_yoinadd_storekey:nn
+				{ #1 / #1 .yoin }
 		} {
 			\msg_error:nnn { yoin } { yoinadd-dotyoinmissing } { #1 }
 		}
@@ -358,13 +377,6 @@
 }
 %    \end{macrocode}
 % \end{macro}
-%    \begin{macrocode}
-\keys_define:nn { yoin / yoinaddfromarticle } {
-	unknown .code:n =
-		\@@_yoinadd_storekey:Vn \l_keys_key_tl { #1 }
-		,
-}
-%    \end{macrocode}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{Environment yoinshell}
@@ -627,13 +639,6 @@
 	}
 }
 \DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
-%    \end{macrocode}
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{Conditionals for checking the existence of tags and flags (undocumented)}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%    \begin{macrocode}
 %    \end{macrocode}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

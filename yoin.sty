@@ -28,11 +28,17 @@
    \seq_set_from_clist:Nn \l__yoin_tmpa_seq { #2 }
    \seq_gconcat:NNN #1 #1 \l__yoin_tmpa_seq
 }
+\tl_new:N \l__yoin_keys_tmpa_tl
 \cs_new_protected:Nn \yoin_keys_set_from_file:nn {
-   \tl_set_from_file:Nnn \l_tmpa_tl { } { #2 }
-   \keys_set:nV { #1 } \l_tmpa_tl
+   \tl_set_from_file:Nnn \l__yoin_keys_tmpa_tl { } { #2 }
+   \keys_set:nV { #1 } \l__yoin_keys_tmpa_tl
 }
 \cs_generate_variant:Nn \keys_set:nn { nV }
+\cs_new_protected:Nn \yoin_keyval_parse_from_file:NNn {
+   \tl_set_from_file:Nnn \l__yoin_keys_tmpa_tl { } { #3 }
+   \keyval_parse:NNV #1 #2 \l__yoin_keys_tmpa_tl
+}
+\cs_generate_variant:Nn \keyval_parse:NNn { NNV }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bool_new:N \g_yoin_subprocess_bool
@@ -102,6 +108,9 @@
 \cs_new_protected:Nn \__yoin_yoinadd_storekey:nn {
    \prop_gput:cnn { \yoin_yoinadd_prop:V \l__yoin_yoinadd_currentarticle_tl } { #1 } { #2 }
 }
+\cs_new_protected:Nn \__yoin_yoinadd_storekey:n {
+   \prop_gput:cnn { \yoin_yoinadd_prop:V \l__yoin_yoinadd_currentarticle_tl } { #1 } { }
+}
 \cs_new_protected:Nn \yoin_yoinadd:nn {
    \tl_set:Nn \l__yoin_yoinadd_currentarticle_tl { #1 }
    \seq_if_in:NnTF \g_yoin_yoinadd_seq { #1 } {
@@ -112,7 +121,10 @@
       \__yoin_yoinadd_storekey:nn { article } { #1 }
       \keys_set:nn { yoin / yoinadd } { #2 }
       \file_if_exist:nTF { #1 / #1 .yoin } {
-         \yoin_keys_set_from_file:nn { yoin / yoinaddfromarticle } { #1 / #1 .yoin }
+         \yoin_keyval_parse_from_file:NNn
+            \__yoin_yoinadd_storekey:n
+            \__yoin_yoinadd_storekey:nn
+            { #1 / #1 .yoin }
       } {
          \msg_error:nnn { yoin } { yoinadd-dotyoinmissing } { #1 }
       }
@@ -134,11 +146,6 @@
    tag .code:n =
       \__yoin_error_if_tag_undefined:n { #1 }
       \__yoin_yoinadd_storekey:nn { tag } { #1 }
-      ,
-}
-\keys_define:nn { yoin / yoinaddfromarticle } {
-   unknown .code:n =
-      \__yoin_yoinadd_storekey:Vn \l_keys_key_tl { #1 }
       ,
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
