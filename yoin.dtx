@@ -184,6 +184,11 @@
 \prg_new_protected_conditional:Nnn \yoin_if_flag_defined:n { T, F, TF } {
 	\seq_if_in:NnTF \g_yoin_flags_seq { #1 } { \prg_return_true: } { \prg_return_false: }
 }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ \@@_error_if_tag_undefined:n , \@@_error_if_flag_undefined:n }
+% Check whether a tag/flag is defined, if not, issue an error.
+%    \begin{macrocode}
 \cs_new_protected:Nn \@@_error_if_tag_undefined:n {
 	\yoin_if_tag_defined:nF { #1 } { \msg_error:nnn { yoin } { unknown-tag } { #1 } }
 }
@@ -526,8 +531,8 @@
 		\tl_if_eq_p:NN \l_@@_yoinshell_runforeach_onlytag_tl \l_@@_yoinshell_runforarticle_tag_tl
 	}{
 		\group_begin:
-		\@@_yoinshell_runforarticle_keyfromprop:nNn { #1 } { article } \Article
-		\@@_yoinshell_runforarticle_keyfromprop:nNn { #1 } { jobname } \Jobname
+		\@@_yoinshell_runforarticle_keyfromprop:nnN { #1 } { article } \Article
+		\@@_yoinshell_runforarticle_keyfromprop:nnN { #1 } { jobname } \Jobname
 		\@@_yoinshell_shellescape:n { #2 }
 		\group_end:
 	}
