@@ -72,8 +72,6 @@
 % \section{Package header}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% We load the required packages needed for \LaTeX3, and the package header.
-%
 %    \begin{macrocode}
 %<*package>
 %<@@=yoin>
@@ -82,7 +80,7 @@
 %    \begin{macrocode}
 \RequirePackage{expl3,l3keys2e,l3regex,xparse}
 %    \end{macrocode}
-% From \T{zref} bundle, for computing the total number of pages.
+% From \T{zref} bundle, for computing the total number of pages of an article.
 %    \begin{macrocode}
 \RequirePackage{zref-totpages}
 %    \end{macrocode}
@@ -90,7 +88,10 @@
 %    \begin{macrocode}
 \RequirePackage[abspath]{currfile}
 %    \end{macrocode}
-%
+% For including PDF files.
+%    \begin{macrocode}
+\RequirePackage{pdfpages}
+%    \end{macrocode}
 % Package header.
 %    \begin{macrocode}
 \ProvidesExplPackage{yoin}{2016/02/28}{v0.0.1}{Joining articles into issues}
@@ -462,7 +463,7 @@
 \NewDocumentEnvironment { yoinshell } { O{} } {
 	\@@_yoinshell_begin:n { #1 }
 } {
-	\@@_yoin_yoinshell_end:
+	\@@_yoinshell_end:
 }
 %    \end{macrocode}
 % \end{macro}
@@ -633,9 +634,10 @@
 \iow_new:N \g_@@_yoinprocess_stream
 \cs_new_protected:Nn \yoin_yoinprocess:n {
 	\keys_set:nn { yoin / yoinprocess } { #1 }	
+	\cleardoublepage
+	\int_gset:Nn \g_yoin_page_int { \value { page } }
 	\seq_map_inline:Nn \g_yoin_yoinadd_seq {
 		\cleardoublepage
-		\int_gset:Nn \g_yoin_page_int { \value { page } }
 		\includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
 		\iow_open:Nn \g_@@_yoinprocess_stream { ##1 .yoin }
 		\iow_now:Nx \g_@@_yoinprocess_stream { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }

@@ -21,6 +21,7 @@
 \RequirePackage{expl3,l3keys2e,l3regex,xparse}
 \RequirePackage{zref-totpages}
 \RequirePackage[abspath]{currfile}
+\RequirePackage{pdfpages}
 \ProvidesExplPackage{yoin}{2016/02/28}{v0.0.1}{Joining articles into issues}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -189,7 +190,7 @@
 \NewDocumentEnvironment { yoinshell } { O{} } {
    \__yoin_yoinshell_begin:n { #1 }
 } {
-   \__yoin_yoin_yoinshell_end:
+   \__yoin_yoinshell_end:
 }
 \tl_new:N \l__yoin_yoinshell_runforarticle_tag_tl
 \tl_new:N \l__yoin_yoinshell_runforeach_onlytag_tl
@@ -225,8 +226,8 @@
       \tl_if_eq_p:NN \l__yoin_yoinshell_runforeach_onlytag_tl \l__yoin_yoinshell_runforarticle_tag_tl
    }{
       \group_begin:
-      \__yoin_yoinshell_runforarticle_keyfromprop:nNn { #1 } { article } \Article
-      \__yoin_yoinshell_runforarticle_keyfromprop:nNn { #1 } { jobname } \Jobname
+      \__yoin_yoinshell_runforarticle_keyfromprop:nnN { #1 } { article } \Article
+      \__yoin_yoinshell_runforarticle_keyfromprop:nnN { #1 } { jobname } \Jobname
       \__yoin_yoinshell_shellescape:n { #2 }
       \group_end:
    }
@@ -315,9 +316,10 @@
 \iow_new:N \g__yoin_yoinprocess_stream
 \cs_new_protected:Nn \yoin_yoinprocess:n {
    \keys_set:nn { yoin / yoinprocess } { #1 }
+   \cleardoublepage
+   \int_gset:Nn \g_yoin_page_int { \value { page } }
    \seq_map_inline:Nn \g_yoin_yoinadd_seq {
       \cleardoublepage
-      \int_gset:Nn \g_yoin_page_int { \value { page } }
       \includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
       \iow_open:Nn \g__yoin_yoinprocess_stream { ##1 .yoin }
       \iow_now:Nx \g__yoin_yoinprocess_stream { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }
