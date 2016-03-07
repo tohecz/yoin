@@ -9,7 +9,7 @@ Before any implementation is done, some things have to be fixed from the design 
 - Allow articles to be processed multiple times with different options for different purposes.
 - Provided as a package, not a class.
 - Written "fully" in expl3, using as little external packages as possible, namely:<br>
-  - `pdfinclude`, `expl3`, `xparse` (let's see what else will be needed).
+  - `pdfinclude`, `expl3` (and friends), `xparse`, `zref-totpages`, `currfile` (let's see what else will be needed).
 - High level of modularity, **still, reasonably working "out of the box".** (Let's not forget about this one!)
 - Allow for (automatic?) consecutive page numbering between issues in the same volume of a journal.
 - Use dtx for documentation.
