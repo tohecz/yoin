@@ -314,20 +314,31 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \int_new:N \g_yoin_page_int
 \iow_new:N \g__yoin_yoinprocess_stream
+\bool_new:N \g__yoin_yoinprocess_output_bool
+\bool_set_true:N \g__yoin_yoinprocess_output_bool
 \cs_new_protected:Nn \yoin_yoinprocess:n {
    \keys_set:nn { yoin / yoinprocess } { #1 }
-   \cleardoublepage
+   \clearpage
    \int_gset:Nn \g_yoin_page_int { \value { page } }
    \seq_map_inline:Nn \g_yoin_yoinadd_seq {
-      \cleardoublepage
-      \includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
+      \__yoin_yoinprocess_cleardoublepage:
+      \bool_if:NT \g__yoin_yoinprocess_output_bool {
+         \includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
+      }
       \iow_open:Nn \g__yoin_yoinprocess_stream { ##1 .yoin }
       \iow_now:Nx \g__yoin_yoinprocess_stream { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }
+      \iow_now:Nx \g__yoin_yoinprocess_stream { parent ~ = ~ \jobname , }
       \iow_close:N \g__yoin_yoinprocess_stream
       \int_gadd:Nn \g_yoin_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
    }
 }
 \DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
+
+\cs_new_protected:Nn \__yoin_yoinprocess_cleardoublepage: {
+   \bool_if:NT \g__yoin_yoinprocess_output_bool { \cleardoublepage }
+   \int_if_even:nT { \g_yoin_page_int } { \int_gincr:N \g_yoin_page_int }
+}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cs_new:Nn \yoin_blabla: {
