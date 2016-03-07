@@ -269,6 +269,13 @@
       \yoin_article_set_readkey:nn { firstpage } { #1 }
       ,
 
+   parent .code:n =
+      \file_if_exist:nT { ../ #1 .yoin } {
+         \yoin_keys_set_from_file:nn { yoin / toarticle } { ../ #1 .yoin }
+      }
+      \yoin_article_set_readkey:nn { parent } { #1 }
+      ,
+
    unknown .code:n =
       \yoin_article_set_readkey:nn { \l_keys_key_tl } { #1 }
       ,
