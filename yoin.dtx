@@ -649,15 +649,41 @@
 %    \begin{macrocode}
 \int_new:N \g_yoin_page_int
 \iow_new:N \g_@@_yoinprocess_stream
-\bool_new:N \g_@@_yoinprocess_output_bool
-\bool_set_true:N \g_@@_yoinprocess_output_bool
 \cs_new_protected:Nn \yoin_yoinprocess:n {
 	\keys_set:nn { yoin / yoinprocess } { #1 }
 	\clearpage
+	\message{AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
+	\bool_if:NTF \l_@@_yoinprocess_cleardoublepage_bool {
+		\bool_if:NTF \l_@@_yoinprocess_setpagenumber_bool {
+			%^^A CDP + SPN
+			\message{(((CDP+SPN)))}
+			\int_if_odd:nT { \value { page } + \l_@@_yoinprocess_setpagenumber_int } {
+				\bool_if:NT \l_@@_yoinprocess_output_bool {
+					\hbox {}\newpage \if@twocolumn \hbox {}\newpage \fi
+				}
+			}
+			\setcounter { page } { \int_use:N \l_@@_yoinprocess_setpagenumber_int }
+		} {
+			%^^A CDP
+			\message{(((CDP)))}
+			\@@_yoinprocess_cleardoublepage:
+		}
+	} {
+		\bool_if:NTF \l_@@_yoinprocess_setpagenumber_bool {
+			%^^A SPN
+			\message{(((SPN)))}
+			\setcounter { page } { \int_use:N \l_@@_yoinprocess_setpagenumber_int }
+		} {
+			%^^A neither
+			\message{((()))}
+		}
+	}
 	\int_gset:Nn \g_yoin_page_int { \value { page } }
 	\seq_map_inline:Nn \g_yoin_yoinadd_seq {
-		\@@_yoinprocess_cleardoublepage:
-		\bool_if:NT \g_@@_yoinprocess_output_bool { 
+		\bool_if:NT \l_@@_yoinprocess_openright_bool {
+			\@@_yoinprocess_cleardoublepage:
+		}
+		\bool_if:NT \l_@@_yoinprocess_output_bool { 
 			\includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
 		}
 		\iow_open:Nn \g_@@_yoinprocess_stream { ##1 .yoin }
@@ -670,8 +696,36 @@
 \DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
 
 \cs_new_protected:Nn \@@_yoinprocess_cleardoublepage: {
-	\bool_if:NT \g_@@_yoinprocess_output_bool { \cleardoublepage }
+	\bool_if:NT \l_@@_yoinprocess_output_bool { \cleardoublepage }
 	\int_if_even:nT { \g_yoin_page_int } { \int_gincr:N \g_yoin_page_int }
+}
+
+\bool_new:N \l_@@_yoinprocess_cleardoublepage_bool
+\bool_new:N \l_@@_yoinprocess_output_bool
+\bool_new:N \l_@@_yoinprocess_openright_bool
+\bool_new:N \l_@@_yoinprocess_setpagenumber_bool
+\int_new:N \l_@@_yoinprocess_setpagenumber_int
+\keys_define:nn { yoin / yoinprocess } {
+
+	cleardoublepage .bool_set:N = \l_@@_yoinprocess_cleardoublepage_bool ,
+	cleardoublepage .initial:n = { false },
+
+	output .bool_set:N = \l_@@_yoinprocess_output_bool ,
+	output .initial:n = { true },
+
+	openright .bool_set:N = \l_@@_yoinprocess_openright_bool ,
+	openany .bool_set_inverse:N = \l_@@_yoinprocess_openright_bool ,
+	openright .initial:n = { false },
+
+	setpagenumber .code:n =
+		\str_if_eq:nnTF { #1 } { false } {
+			\bool_set_false:N \l_@@_yoinprocess_setpagenumber_bool
+		} {
+			\bool_set_true:N \l_@@_yoinprocess_setpagenumber_bool
+			\int_set:Nn \l_@@_yoinprocess_setpagenumber_int { #1 }
+		},
+	setpagenumber .initial:n = { false },
+
 }
 
 %    \end{macrocode}
