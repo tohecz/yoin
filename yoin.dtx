@@ -649,7 +649,7 @@
 %
 %    \begin{macrocode}
 \int_new:N \g_yoin_page_int
-\iow_new:N \g_@@_yoinprocess_stream
+\iow_new:N \g_@@_yoinprocess_iow
 \cs_new_protected:Nn \yoin_yoinprocess:n {
 	\keys_set:nn { yoin / yoinprocess } { #1 }
 	\clearpage
@@ -687,14 +687,14 @@
 		\bool_if:NT \l_@@_yoinprocess_output_bool { 
 			\includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
 		}
-		\iow_open:Nn \g_@@_yoinprocess_stream { ##1 .yoin }
+		\iow_open:Nn \g_@@_yoinprocess_iow { ##1 .yoin }
 		\bool_if:NTF \l_@@_yoinprocess_alwayspageone_bool { 
-			\iow_now:Nx \g_@@_yoinprocess_stream { firstpage ~ = ~ 1 , }
+			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ 1 , }
 		} {
-			\iow_now:Nx \g_@@_yoinprocess_stream { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }
+			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }
 		}
-		\iow_now:Nx \g_@@_yoinprocess_stream { parent ~ = ~ \jobname , }
-		\iow_close:N \g_@@_yoinprocess_stream
+		\iow_now:Nx \g_@@_yoinprocess_iow { parent ~ = ~ \jobname , }
+		\iow_close:N \g_@@_yoinprocess_iow
 		\int_gadd:Nn \g_yoin_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
 	}
 }
