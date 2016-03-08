@@ -111,9 +111,10 @@
 % \begin{macro}{\yoin_seq_gappend_clist:Nn}
 %    Globally append \T{clist} \p2 to \T{seq} \p1.
 %    \begin{macrocode}
+\seq_new:N \l_@@_seq_tmpa_seq
 \cs_new_protected:Nn \yoin_seq_gappend_clist:Nn {
-	\seq_set_from_clist:Nn \l_@@_tmpa_seq { #2 }
-	\seq_gconcat:NNN #1 #1 \l_@@_tmpa_seq
+	\seq_set_from_clist:Nn \l_@@_seq_tmpa_seq { #2 }
+	\seq_gconcat:NNN #1 #1 \l_@@_seq_tmpa_seq
 }
 %    \end{macrocode}
 % \end{macro}
@@ -503,7 +504,7 @@
 % This macro lets \T{\#3} to the value of property \T{\#2} of article \T{\#1}.
 % It makes it an empty definition if the property is unset.
 %    \begin{macrocode}
-\tl_new:N \@@_yoinshell_runforarticle_tmpa_tl
+\tl_new:N \l_@@_yoinshell_runforarticle_tmpa_tl
 \cs_new_protected:Nn \@@_yoinshell_runforarticle_keyfromprop:nnN {
 	\prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { #2 } \l_@@_yoinshell_runforarticle_tmpa_tl
 	\quark_if_no_value:NTF \l_@@_yoinshell_runforarticle_tmpa_tl {

@@ -25,9 +25,10 @@
 \ProvidesExplPackage{yoin}{2016/02/28}{v0.0.1}{Joining articles into issues}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\seq_new:N \l__yoin_seq_tmpa_seq
 \cs_new_protected:Nn \yoin_seq_gappend_clist:Nn {
-   \seq_set_from_clist:Nn \l__yoin_tmpa_seq { #2 }
-   \seq_gconcat:NNN #1 #1 \l__yoin_tmpa_seq
+   \seq_set_from_clist:Nn \l__yoin_seq_tmpa_seq { #2 }
+   \seq_gconcat:NNN #1 #1 \l__yoin_seq_tmpa_seq
 }
 \tl_new:N \l__yoin_keys_tmpa_tl
 \cs_new_protected:Nn \yoin_keys_set_from_file:nn {
@@ -201,7 +202,7 @@
       \tl_set:Nn \l__yoin_yoinshell_runforeach_onlytag_tl { #1 }
       ,
 }
-\tl_new:N \__yoin_yoinshell_runforarticle_tmpa_tl
+\tl_new:N \l__yoin_yoinshell_runforarticle_tmpa_tl
 \cs_new_protected:Nn \__yoin_yoinshell_runforarticle_keyfromprop:nnN {
    \prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { #2 } \l__yoin_yoinshell_runforarticle_tmpa_tl
    \quark_if_no_value:NTF \l__yoin_yoinshell_runforarticle_tmpa_tl {
@@ -321,15 +322,41 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \int_new:N \g_yoin_page_int
 \iow_new:N \g__yoin_yoinprocess_stream
-\bool_new:N \g__yoin_yoinprocess_output_bool
-\bool_set_true:N \g__yoin_yoinprocess_output_bool
 \cs_new_protected:Nn \yoin_yoinprocess:n {
    \keys_set:nn { yoin / yoinprocess } { #1 }
    \clearpage
+   \message{AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
+   \bool_if:NTF \l__yoin_yoinprocess_cleardoublepage_bool {
+      \bool_if:NTF \l__yoin_yoinprocess_setpagenumber_bool {
+         %^^A CDP + SPN
+         \message{(((CDP+SPN)))}
+         \int_if_odd:nT { \value { page } + \l__yoin_yoinprocess_setpagenumber_int } {
+            \bool_if:NT \l__yoin_yoinprocess_output_bool {
+               \hbox {}\newpage \if@twocolumn \hbox {}\newpage \fi
+            }
+         }
+         \setcounter { page } { \int_use:N \l__yoin_yoinprocess_setpagenumber_int }
+      } {
+         %^^A CDP
+         \message{(((CDP)))}
+         \__yoin_yoinprocess_cleardoublepage:
+      }
+   } {
+      \bool_if:NTF \l__yoin_yoinprocess_setpagenumber_bool {
+         %^^A SPN
+         \message{(((SPN)))}
+         \setcounter { page } { \int_use:N \l__yoin_yoinprocess_setpagenumber_int }
+      } {
+         %^^A neither
+         \message{((()))}
+      }
+   }
    \int_gset:Nn \g_yoin_page_int { \value { page } }
    \seq_map_inline:Nn \g_yoin_yoinadd_seq {
-      \__yoin_yoinprocess_cleardoublepage:
-      \bool_if:NT \g__yoin_yoinprocess_output_bool {
+      \bool_if:NT \l__yoin_yoinprocess_openright_bool {
+         \__yoin_yoinprocess_cleardoublepage:
+      }
+      \bool_if:NT \l__yoin_yoinprocess_output_bool {
          \includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
       }
       \iow_open:Nn \g__yoin_yoinprocess_stream { ##1 .yoin }
@@ -342,8 +369,36 @@
 \DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
 
 \cs_new_protected:Nn \__yoin_yoinprocess_cleardoublepage: {
-   \bool_if:NT \g__yoin_yoinprocess_output_bool { \cleardoublepage }
+   \bool_if:NT \l__yoin_yoinprocess_output_bool { \cleardoublepage }
    \int_if_even:nT { \g_yoin_page_int } { \int_gincr:N \g_yoin_page_int }
+}
+
+\bool_new:N \l__yoin_yoinprocess_cleardoublepage_bool
+\bool_new:N \l__yoin_yoinprocess_output_bool
+\bool_new:N \l__yoin_yoinprocess_openright_bool
+\bool_new:N \l__yoin_yoinprocess_setpagenumber_bool
+\int_new:N \l__yoin_yoinprocess_setpagenumber_int
+\keys_define:nn { yoin / yoinprocess } {
+
+   cleardoublepage .bool_set:N = \l__yoin_yoinprocess_cleardoublepage_bool ,
+   cleardoublepage .initial:n = { false },
+
+   output .bool_set:N = \l__yoin_yoinprocess_output_bool ,
+   output .initial:n = { true },
+
+   openright .bool_set:N = \l__yoin_yoinprocess_openright_bool ,
+   openany .bool_set_inverse:N = \l__yoin_yoinprocess_openright_bool ,
+   openright .initial:n = { false },
+
+   setpagenumber .code:n =
+      \str_if_eq:nnTF { #1 } { false } {
+         \bool_set_false:N \l__yoin_yoinprocess_setpagenumber_bool
+      } {
+         \bool_set_true:N \l__yoin_yoinprocess_setpagenumber_bool
+         \int_set:Nn \l__yoin_yoinprocess_setpagenumber_int { #1 }
+      },
+   setpagenumber .initial:n = { false },
+
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
