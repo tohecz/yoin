@@ -12,6 +12,12 @@
 %<*driver>
 \documentclass{l3doc}
 
+\ExplSyntaxOn
+
+\cs_set_protected_nopar:Nn \__codedoc_macro_end_style:n { }
+
+\ExplSyntaxOff
+
 \usepackage[vmargin=0.8in,hmargin={2.5in,0.8in},marginparsep=0.1in,marginparwidth=2.3in,a4paper,landscape]{geometry}
 \usepackage{lmodern,anttor}
 \usepackage{xcolor}
