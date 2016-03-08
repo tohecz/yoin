@@ -339,7 +339,7 @@
       } {
          %^^A CDP
          \message{(((CDP)))}
-         \__yoin_yoinprocess_cleardoublepage:
+         \bool_if:NT \l__yoin_yoinprocess_output_bool { \cleardoublepage }
       }
    } {
       \bool_if:NTF \l__yoin_yoinprocess_setpagenumber_bool {
@@ -360,7 +360,11 @@
          \includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
       }
       \iow_open:Nn \g__yoin_yoinprocess_stream { ##1 .yoin }
-      \iow_now:Nx \g__yoin_yoinprocess_stream { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }
+      \bool_if:NTF \l__yoin_yoinprocess_alwayspageone_bool {
+         \iow_now:Nx \g__yoin_yoinprocess_stream { firstpage ~ = ~ 1 , }
+      } {
+         \iow_now:Nx \g__yoin_yoinprocess_stream { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }
+      }
       \iow_now:Nx \g__yoin_yoinprocess_stream { parent ~ = ~ \jobname , }
       \iow_close:N \g__yoin_yoinprocess_stream
       \int_gadd:Nn \g_yoin_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
@@ -376,6 +380,7 @@
 \bool_new:N \l__yoin_yoinprocess_cleardoublepage_bool
 \bool_new:N \l__yoin_yoinprocess_output_bool
 \bool_new:N \l__yoin_yoinprocess_openright_bool
+\bool_new:N \l__yoin_yoinprocess_alwayspageone_bool
 \bool_new:N \l__yoin_yoinprocess_setpagenumber_bool
 \int_new:N \l__yoin_yoinprocess_setpagenumber_int
 \keys_define:nn { yoin / yoinprocess } {
@@ -396,8 +401,12 @@
       } {
          \bool_set_true:N \l__yoin_yoinprocess_setpagenumber_bool
          \int_set:Nn \l__yoin_yoinprocess_setpagenumber_int { #1 }
-      },
+      }
+      ,
    setpagenumber .initial:n = { false },
+
+   alwayspageone .bool_set:N = \l__yoin_yoinprocess_alwayspageone_bool ,
+   alwayspageone .initial:n = { false },
 
 }
 
