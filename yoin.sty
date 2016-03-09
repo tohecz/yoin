@@ -120,6 +120,9 @@
    } {
       \seq_gput_right:Nn \g_yoin_yoinadd_seq { #1 }
       \prop_new:c { \yoin_yoinadd_prop:n { #1 } }
+      \clist_map_inline:nn { forceopenany, forceopenright, ignore } {
+         \__yoin_yoinadd_storekey:nn { ##1 } { 0 }
+      }
       \__yoin_yoinadd_storekey:nn { article } { #1 }
       \keys_set:nn { yoin / yoinadd } { #2 }
       \file_if_exist:nTF { #1 / #1 .yoin } {
@@ -139,9 +142,17 @@
    { The ~ article ~ "#1" ~ has ~ been ~ already ~ processed ~ by ~ \token_to_str:N \yoinAdd ~.}
 \msg_new:nnn { yoin } { yoinadd-dotyoinmissing }
    { The ~ article ~ "#1" ~ has ~ no ~ file "#1/#1.yoin" ~ and ~ was ~ not ~ properly ~ set ~ up.}
-\clist_map_inline:nn { forceopenany, forceopenright, ignore } {
+\clist_map_inline:nn { textualkey } {
    \keys_define:nn { yoin / yoinadd } {
       #1 .code:n = \__yoin_yoinadd_storekey:nn { #1 } { ##1 },
+   }
+}
+\clist_map_inline:nn { forceopenany, forceopenright, ignore } {
+   \keys_define:nn { yoin / yoinadd } {
+      #1 .choice:,
+      #1 / true .code:n = \__yoin_yoinadd_storekey:nn { #1 } { 1 },
+      #1 / false .code:n = \__yoin_yoinadd_storekey:nn { #1 } { 0 },
+      #1 / unknown .code:n = \msg_error:nnx { yoin } { boolean-values-only } { \l_keys_key_tl },
    }
 }
 \keys_define:nn { yoin / yoinadd } {
@@ -320,61 +331,77 @@
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\int_new:N \g_yoin_page_int
-\iow_new:N \g__yoin_yoinprocess_stream
 \cs_new_protected:Nn \yoin_yoinprocess:n {
    \keys_set:nn { yoin / yoinprocess } { #1 }
    \clearpage
-   \message{AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
    \bool_if:NTF \l__yoin_yoinprocess_cleardoublepage_bool {
       \bool_if:NTF \l__yoin_yoinprocess_setpagenumber_bool {
-         %^^A CDP + SPN
-         \message{(((CDP+SPN)))}
          \int_if_odd:nT { \value { page } + \l__yoin_yoinprocess_setpagenumber_int } {
-            \bool_if:NT \l__yoin_yoinprocess_output_bool {
-               \hbox {}\newpage \if@twocolumn \hbox {}\newpage \fi
-            }
+            \__yoin_yoinprocess_clearonepage:
          }
          \setcounter { page } { \int_use:N \l__yoin_yoinprocess_setpagenumber_int }
       } {
-         %^^A CDP
-         \message{(((CDP)))}
-         \bool_if:NT \l__yoin_yoinprocess_output_bool { \cleardoublepage }
+         \__yoin_yoinprocess_cleardoublepage:
       }
    } {
       \bool_if:NTF \l__yoin_yoinprocess_setpagenumber_bool {
-         %^^A SPN
-         \message{(((SPN)))}
          \setcounter { page } { \int_use:N \l__yoin_yoinprocess_setpagenumber_int }
       } {
-         %^^A neither
-         \message{((()))}
+         \prg_do_nothing:
       }
    }
    \int_gset:Nn \g_yoin_page_int { \value { page } }
    \seq_map_inline:Nn \g_yoin_yoinadd_seq {
-      \bool_if:NT \l__yoin_yoinprocess_openright_bool {
+      \bool_if:nT {
+         \int_compare_p:nNn {
+            \yoin_yoinadd_prop_item:nn { ##1 } { forceopenany }
+            + \yoin_yoinadd_prop_item:nn { ##1 } { forceopenright }
+         } = { 2 }
+      } {
+         \msg_error:nnn { yoin } { forceopenanyright } { ##1 }
+      }
+      \bool_if:nTF {%%% FOR=1 || (OR=true && FOA=0)
+         \int_compare_p:nNn { \yoin_yoinadd_prop_item:nn { ##1 } { forceopenright } } = { 1 }
+         || (
+            \l__yoin_yoinprocess_openright_bool
+            &&
+            \int_compare_p:nNn { \yoin_yoinadd_prop_item:nn { ##1 } { forceopenany } } = { 0 }
+         )
+      } {
          \__yoin_yoinprocess_cleardoublepage:
+         \message { CLEARDOUBLEPAGE }
+      } {
+         \message { NONONONONONOCLEAR }
       }
       \bool_if:NT \l__yoin_yoinprocess_output_bool {
          \includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
       }
-      \iow_open:Nn \g__yoin_yoinprocess_stream { ##1 .yoin }
+      \iow_open:Nn \g__yoin_yoinprocess_iow { ##1 .yoin }
       \bool_if:NTF \l__yoin_yoinprocess_alwayspageone_bool {
-         \iow_now:Nx \g__yoin_yoinprocess_stream { firstpage ~ = ~ 1 , }
+         \iow_now:Nx \g__yoin_yoinprocess_iow { firstpage ~ = ~ 1 , }
       } {
-         \iow_now:Nx \g__yoin_yoinprocess_stream { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }
+         \iow_now:Nx \g__yoin_yoinprocess_iow { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }
       }
-      \iow_now:Nx \g__yoin_yoinprocess_stream { parent ~ = ~ \jobname , }
-      \iow_close:N \g__yoin_yoinprocess_stream
+      \iow_now:Nx \g__yoin_yoinprocess_iow { parent ~ = ~ \jobname , }
+      \iow_close:N \g__yoin_yoinprocess_iow
       \int_gadd:Nn \g_yoin_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
    }
 }
 \DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
 
+\int_new:N \g_yoin_page_int
+\iow_new:N \g__yoin_yoinprocess_iow
+
 \cs_new_protected:Nn \__yoin_yoinprocess_cleardoublepage: {
    \bool_if:NT \l__yoin_yoinprocess_output_bool { \cleardoublepage }
    \int_if_even:nT { \g_yoin_page_int } { \int_gincr:N \g_yoin_page_int }
+}
+
+\cs_new_protected:Nn \__yoin_yoinprocess_clearonepage: {
+   \bool_if:NT \l__yoin_yoinprocess_output_bool {
+      \hbox {}\newpage \if@twocolumn \hbox {}\newpage \fi
+   }
+   \int_gincr:N \g_yoin_page_int
 }
 
 \bool_new:N \l__yoin_yoinprocess_cleardoublepage_bool
