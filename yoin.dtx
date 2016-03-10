@@ -22,9 +22,6 @@
 \usepackage{lmodern,anttor}
 \usepackage{xcolor}
 
-\newcommand\T[1]{{\let\\\textbackslash\texttt{#1}}}
-\newcommand\p[1]{\texttt{\##1}}
-
 \DisableCrossrefs
 \CodelineNumbered
 \def\theCodelineNo{{\color{black}\normalfont\fontseries{sb}\selectfont\footnotesize\arabic{CodelineNo}}}
@@ -86,11 +83,11 @@
 %    \begin{macrocode}
 \RequirePackage{expl3,l3keys2e,l3regex,xparse}
 %    \end{macrocode}
-% From \T{zref} bundle, for computing the total number of pages of an article.
+% From |zref| bundle, for computing the total number of pages of an article.
 %    \begin{macrocode}
 \RequirePackage{zref-totpages}
 %    \end{macrocode}
-% We need the absolute paths. This also means we need \T{-recorder} option to \T{pdflatex}.
+% We need the absolute paths. This also means we need |-recorder| option to |pdflatex|.
 %    \begin{macrocode}
 \RequirePackage[abspath]{currfile}
 %    \end{macrocode}
@@ -109,7 +106,7 @@
 %
 % Macros not necessarily related to the package; moreorless an addition to \LaTeX3.
 % \begin{macro}{\yoin_seq_gappend_clist:Nn}
-%    Globally append \T{clist} \p2 to \T{seq} \p1.
+%    Globally append |clist| |#2| to |seq| |#1|.
 %    \begin{macrocode}
 \seq_new:N \l_@@_seq_tmpa_seq
 \cs_new_protected:Nn \yoin_seq_gappend_clist:Nn {
@@ -120,7 +117,7 @@
 % \end{macro}
 %
 % \begin{macro}{\yoin_keys_set_from_file:nn}
-% Read a file \T{\#2} containing a key--value list and set the keys for \T{\#1}.
+% Read a file |#2| containing a key--value list and set the keys for |#1|.
 % No checks are done here, nothing like comments could be used, the keys should be separated by a comma
 %  (and spaces of course as needed).
 %    \begin{macrocode}
@@ -133,7 +130,7 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\yoin_keyval_parse_from_file:nn}
-% Read a file \T{\#2} containing a key--value list and set the keys for \T{\#1}.
+% Read a file |#2| containing a key--value list and set the keys for |#1|.
 % No checks are done here, nothing like comments could be used, the keys should be separated by a comma
 %  (and spaces of course as needed).
 %    \begin{macrocode}
@@ -227,15 +224,15 @@
 	subprocess .bool_gset:N = \g_yoin_subprocess_bool,
 	subprocess .initial:n = { false },
 %    \end{macrocode}
-% Keys whose \T{clist} values are appended to a \T{seq}:
+% Keys whose |clist| values are appended to a |seq|:
 %    \begin{macrocode}
 	defineflags .code:n = \yoin_seq_gappend_clist:Nn \g_yoin_flags_seq { #1 },
 %    \end{macrocode}
 %    \begin{macrocode}
 	definetags .code:n = \yoin_seq_gappend_clist:Nn \g_yoin_tags_seq { #1 },
 %    \end{macrocode}
-% A \T{clist} key is stored in a \T{seq}, also, a corresponding \T{bool} is set true.
-% (The point is, if \T{onlyflags}/\T{onlytags} is not ever set up, we want to know it since
+% A |clist| key is stored in a |seq|, also, a corresponding |bool| is set true.
+% (The point is, if |onlyflags|/|onlytags| is not ever set up, we want to know it since
 % we treat it as if we use all flags/tags.)
 %    \begin{macrocode}
 	onlyflags .code:n =
@@ -257,7 +254,7 @@
 % \begin{macro}{ \ProcessKeysPackageOptions }
 % Process key options given to the package.
 % We \emph{do not want to process any options given to the class}.
-% Whence \T{\\ProcessKeysPackageOptions} and not \T{\\ProcessKeysOptions}.
+% Whence |\ProcessKeysPackageOptions| and not |\ProcessKeysOptions|.
 %    \begin{macrocode}
 \ProcessKeysPackageOptions { yoin / general }
 %    \end{macrocode}
@@ -278,12 +275,12 @@
 % \end{macro}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{\T{\\yoinAdd} macro --- adding articles to the issue}
+% \section{yoinAdd macro --- adding articles to the issue}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% The key--value interface. In this case, we basically only store the keys for each article in a \T{prop}.
+% The key--value interface. In this case, we basically only store the keys for each article in a |prop|.
 % First, an interface for setting the keys for the articles.
-% \T{\\yoin_yoinadd_prop:n} returns the name of the \T{prop} for the given article;
+% |\yoin_yoinadd_prop:n| returns the name of the |prop| for the given article;
 %  \emph{no check for existence is done at this place.}
 % \begin{macro}{ \g_yoin_yoinadd_seq }
 % A sequence for storing the list of the existing articles.
@@ -292,9 +289,9 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ \yoin_yoinadd_prop:n , \yoin_yoinadd_prop:V , \yoin_yoinadd_prop_item:nn , \yoin_yoinadd_prop_item:Vn }
-% \T{\\yoin_yoinadd_prop:n} returns the name of the \T{prop} for the given article;
+% |\yoin_yoinadd_prop:n| returns the name of the |prop| for the given article;
 %  \emph{no check for existence is done at this place.}
-% \T{\\yoin_yoinadd_prop:nn} returns property \T{\#2} of article \T{\#1}, or \T{\\q_no_value} if the property is not set.
+% |\yoin_yoinadd_prop:nn| returns property |\#2| of article |\#1|, or |\q_no_value| if the property is not set.
 %    \begin{macrocode}
 \cs_new:Nn \yoin_yoinadd_prop:n {
 	g_@@_article_#1_prop
@@ -308,12 +305,12 @@
 \cs_generate_variant:Nn \yoin_yoinadd_prop_item:nn { V }
 %    \end{macrocode}
 % \end{macro}
-% For processing \T{\\yoinAdd}, we first set up a \T{tl} to contain the name of the article, then create the \T{prop},
-%  and finally use \T{l3keys} to fill in the \T{prop}.
+% For processing |\yoinAdd|, we first set up a |tl| to contain the name of the article, then create the |prop|,
+%  and finally use |l3keys| to fill in the |prop|.
 % Note that if an article is added twice, an error is issued, if the error is ignored, the article is not added but
 %  the properties are set.
 % \begin{macro}{ \l_@@_yoinadd_currentarticle_tl }
-% A \T{tl} that stores the name of the article that is being processed by \T{\\yoinAdd}.
+% A |tl| that stores the name of the article that is being processed by |\yoinAdd|.
 %    \begin{macrocode}
 \tl_new:N \l_@@_yoinadd_currentarticle_tl
 %    \end{macrocode}
@@ -330,14 +327,14 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ \yoin_yoinadd:nn , \yoinAdd }
-% The macro \T{\\yoinAdd} itself.
-% We first set \T{\\l_@@_yoinadd_currentarticle_tl}, then check whether the same article has not been processed before
+% The macro |\yoinAdd| itself.
+% We first set |\l_@@_yoinadd_currentarticle_tl|, then check whether the same article has not been processed before
 %  (issuing an error in that case and finishing).
-% Then, the article is added in \T{\\g_yoin_yoinadd_seq}, the \T{prop} created,
-% the article's name added in the \T{prop} with key \T{article} and the keys are set.
-% If the article has a \T{.yoin} file in its sub-directory, the key--values in it is added to the \T{prop}.
+% Then, the article is added in |\g_yoin_yoinadd_seq|, the |prop| created,
+% the article's name added in the |prop| with key |article| and the keys are set.
+% If the article has a |.yoin| file in its sub-directory, the key--values in it is added to the |prop|.
 % If the file does not exist, it means things are wrong (the article should first be set up,
-%  before being added to its issue by \T{\\yoinAdd}).
+%  before being added to its issue by |\yoinAdd|).
 %    \begin{macrocode}
 \cs_new_protected:Nn \yoin_yoinadd:nn {
 	\tl_set:Nn \l_@@_yoinadd_currentarticle_tl { #1 }
@@ -369,7 +366,7 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ msg: yoinadd-duplicatearticle , msg: yoinadd-dotyoinmissing }
-% The error messages: for adding a duplicate article and for adding an article with no \T{\#1/\#1.yoin} file.
+% The error messages: for adding a duplicate article and for adding an article with no |\#1/\#1.yoin| file.
 %    \begin{macrocode}
 \msg_new:nnn { yoin } { yoinadd-duplicatearticle }
 	{ The ~ article ~ "#1" ~ has ~ been ~ already ~ processed ~ by ~ \token_to_str:N \yoinAdd ~.}
@@ -378,8 +375,8 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ yoin / yoinadd }
-% The keys here are pretty simple; each defined key just stores its value in the \T{prop}.
-% We recall that \T{\#1} is the key and \T{\#\#1} is the value.
+% The keys here are pretty simple; each defined key just stores its value in the |prop|.
+% We recall that |\#1| is the key and |\#\#1| is the value.
 %    \begin{macrocode}
 \clist_map_inline:nn { textualkey } {
 	\keys_define:nn { yoin / yoinadd } {
@@ -398,7 +395,7 @@
 	}
 }
 %    \end{macrocode}
-% However, for the \T{tag} key, we additionally check that the tag exists.
+% However, for the |tag| key, we additionally check that the tag exists.
 %    \begin{macrocode}
 \keys_define:nn { yoin / yoinadd } {
 	tag .code:n =
@@ -414,18 +411,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % \begin{macro}{ \l_yoin_yoinshell_ignore_bool }
-% A boolean for storing the \T{ignore} key's value.
+% A boolean for storing the |ignore| key's value.
 %    \begin{macrocode}
 %    \end{macrocode}
 % \end{macro}
 %
 % \begin{macro}{ yoin / yoinshell }
-% Key--value interface to \T{yoinshell}.
+% Key--value interface to |yoinshell|.
 %    \begin{macrocode}
 \keys_define:nn { yoin / yoinshell } {
 %    \end{macrocode}
-% If \T{flag} is set and \T{onlyflags} is set but the flag is not amongst them, the whole \T{yoinshell} is ignored
-%  (by setting the \T{ignore} key).
+% If |flag| is set and |onlyflags| is set but the flag is not amongst them, the whole |yoinshell| is ignored
+%  (by setting the |ignore| key).
 %    \begin{macrocode}
 	flag .code:n =
 		\@@_error_if_flag_undefined:n { #1 }
@@ -438,7 +435,7 @@
 		}
 		,
 %    \end{macrocode}
-% The \T{ignore} key sets a boolean
+% The |ignore| key sets a boolean
 %    \begin{macrocode}
 	ignore .bool_set:N = \l_yoin_yoinshell_ignore_bool,
 	ignore .initial:n = { false },
@@ -448,7 +445,7 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ shellesc.sty , \ShellEscape , \__yoin_yoinshell_shellescape:n }
-% A reasonable shell escape that should work in both \T{pdflatex} and \T{lualatex} in \TeX\,Live 2016.
+% A reasonable shell escape that should work in both |pdflatex| and |lualatex| in \TeX\,Live 2016.
 %    \begin{macrocode}
 \file_if_exist:nTF { shellesc.sty } {
 	\RequirePackage { shellesc }
@@ -461,10 +458,10 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ \@@_yoinshell_begin:n , \@@_yoinshell_end: , {yoinshell} }
-% Environment \T{yoinshell} (one key--value argument).
+% Environment |yoinshell| (one key--value argument).
 % We perform some local definitions that should stay local, so we put everything in a group.
 % The keys are set. Then we define the macros --- ``shell commands''.
-% If \T{ignore} is set, these macros are declared to do nothing,
+% If |ignore| is set, these macros are declared to do nothing,
 %  otherwise they are simply wrappers to the \LaTeX3 counterparts.
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_yoinshell_begin:n {
@@ -492,10 +489,10 @@
 }
 %    \end{macrocode}
 % \end{macro}
-% The \T{yoinshell} command \T{\\RunForEach}.
+% The |yoinshell| command |\RunForEach|.
 % \begin{macro}{ \l_@@_yoinshell_runforarticle_tag_tl , \l_@@_yoinshell_runforeach_onlytag_tl }
-% First, two \T{tl}s that will store tags: One for the tag of the article,
-%  one that could be passed to \T{\\RunForEach} that is initially set to \T{\\q_no_value}.
+% First, two |tl|s that will store tags: One for the tag of the article,
+%  one that could be passed to |\RunForEach| that is initially set to |\q_no_value|.
 %    \begin{macrocode}
 \tl_new:N \l_@@_yoinshell_runforarticle_tag_tl
 \tl_new:N \l_@@_yoinshell_runforeach_onlytag_tl
@@ -503,8 +500,8 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ yoin / runforeach }
-% So far, the only key--val passable to \T{\\RunForEach} is \T{onlytag},
-%  which tests for the tag to be declared and passes it to \T{\\l_@@_yoinshell_runforeach_onlytag_tl}.
+% So far, the only key--val passable to |\RunForEach| is |onlytag|,
+%  which tests for the tag to be declared and passes it to |\l_@@_yoinshell_runforeach_onlytag_tl|.
 %    \begin{macrocode}
 \keys_define:nn { yoin / runforeach } {	
 	onlytag .code:n =
@@ -515,7 +512,7 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ \@@_yoinshell_runforarticle_keyfromprop:nnN }
-% This macro lets \T{\#3} to the value of property \T{\#2} of article \T{\#1}.
+% This macro lets |\#3| to the value of property |\#2| of article |\#1|.
 % It makes it an empty definition if the property is unset.
 %    \begin{macrocode}
 \tl_new:N \l_@@_yoinshell_runforarticle_tmpa_tl
@@ -530,8 +527,8 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ \@@_yoinshell_runforeach:nn }
-% \T{\\RunForEach} itself just sets the keys (in a group to make things local)
-%  and then calls \T{\\@@_yoinshell_runforarticle:nn} on each article.
+% |\RunForEach| itself just sets the keys (in a group to make things local)
+%  and then calls |\@@_yoinshell_runforarticle:nn| on each article.
 %    \begin{macrocode}
 \cs_new_protected:Nn \yoin_yoinshell_runforeach:nn {
 	\group_begin:
@@ -542,9 +539,9 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ \@@_yoinshell_runforarticle:nn }
-% If the tag passed to \T{onlytag} of \T{\\RunForEach} is identical to the tag of the article
+% If the tag passed to |onlytag| of |\RunForEach| is identical to the tag of the article
 %  or if any of them is not set, we do what should be done, otherwise nothing is done (the tags do not match).
-% We only extract the \T{prop} to publically available macros like \T{\\Article}, \T{\\Jobname} etc.\@
+% We only extract the |prop| to publically available macros like |\Article|, |\Jobname| etc.\@
 % (in a group to make this local), and then run the command in shell escape.
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_yoinshell_runforarticle:nn {
@@ -667,7 +664,7 @@
 %    \begin{macrocode}
 \cs_new_protected:Nn \yoin_yoinprocess:n {
 %    \end{macrocode}
-% Set the appropriate keys (this may be changed later and moved to \T{yoin/general} keys.
+% Set the appropriate keys (this may be changed later and moved to |yoin/general| keys.
 %    \begin{macrocode}
 	\keys_set:nn { yoin / yoinprocess } { #1 }
 %    \end{macrocode}
@@ -675,19 +672,19 @@
 %    \begin{macrocode}
 	\clearpage
 %    \end{macrocode}
-% Go to the right page number. This depends on two parameters, \T{cleardoublepage} and \T{setpagenumber},
+% Go to the right page number. This depends on two parameters, |cleardoublepage| and |setpagenumber|,
 %  the dependence is explained in each of the 4 cases.
 %    \begin{macrocode}
 	\bool_if:NTF \l_@@_yoinprocess_cleardoublepage_bool {
 		\bool_if:NTF \l_@@_yoinprocess_setpagenumber_bool {
 %    \end{macrocode}
-% Case \T{cleardoublepage}, \T{setpagenumber}.
+% Case |cleardoublepage|, |setpagenumber|.
 % In this case, an empty page is added as necessary to keep the parity of page numbers.
-% For instance, if \T{setpagenumber=110} and last page number is \T{4}, an empty page is added
+% For instance, if |setpagenumber=110| and last page number is |4|, an empty page is added
 %  so that there are no two consecutive even pages.
 % The check is on the parity of the sum of the two numbers.
-% The macro \T{\\__yoin_yoinprocess_clearonepage:\@} uses the code of
-%  \LaTeXe's \T{\\cleardoublepage} for creating the necessary empty page.
+% The macro |\__yoin_yoinprocess_clearonepage:| uses the code of
+%  \LaTeXe's |\cleardoublepage| for creating the necessary empty page.
 %    \begin{macrocode}
 			\int_if_odd:nT { \value { page } + \l_@@_yoinprocess_setpagenumber_int } {
 				\@@_yoinprocess_clearonepage:
@@ -695,23 +692,23 @@
 			\setcounter { page } { \int_use:N \l_@@_yoinprocess_setpagenumber_int }
 		} {
 %    \end{macrocode}
-% Case \T{cleardoublepage}, \T{nosetpagenumber}.
+% Case |cleardoublepage|, |nosetpagenumber|.
 % We simply do a cleardoublepage.
-% Note that \T{\\__yoin_yoinprocess_cleardoublepage:} modifies the value of \T{\\g_yoin_page_int}
+% Note that |\__yoin_yoinprocess_cleardoublepage:| modifies the value of |\g_yoin_page_int|
 %  in a useless way at this place, but we will override the value anyway.
 %    \begin{macrocode}
 			\@@_yoinprocess_cleardoublepage:
 		}
 	} {
 %    \end{macrocode}
-% Case \T{nocleardoublepage}, \T{setpagenumber}.
+% Case |nocleardoublepage|, |setpagenumber|.
 % We simply set the page number.
 %    \begin{macrocode}
 		\bool_if:NTF \l_@@_yoinprocess_setpagenumber_bool {
 			\setcounter { page } { \int_use:N \l_@@_yoinprocess_setpagenumber_int }
 		} {
 %    \end{macrocode}
-% Case \T{nocleardoublepage}, \T{nosetpagenumber}.
+% Case |nocleardoublepage|, |nosetpagenumber|.
 % No adjustment is needed in this case.
 %    \begin{macrocode}
 			\prg_do_nothing:
@@ -720,13 +717,14 @@
 %    \end{macrocode}
 % Here, the loop through the articles starts.
 % First, set the internal counter for the page number;
-%  this is necessary because if the output of the process is suppressed by the key \T{output=false},
+%  this is necessary because if the output of the process is suppressed by the key |output=false|,
 %  we need to keep track of the page number manually.
 %    \begin{macrocode}
 	\int_gset:Nn \g_yoin_page_int { \value { page } }
 	\seq_map_inline:Nn \g_yoin_yoinadd_seq {
 %    \end{macrocode}
-% If \T{openright} key is set, we issue our internal cleardoublepage, which takes into account all peculiarities.
+% Handing of even/odd/pages.
+% First, issue an error if both |addarticle/forceopenany| and |addarticle/forceopenright| are set.
 %    \begin{macrocode}
 		\bool_if:nT {
 			\int_compare_p:nNn {
@@ -736,7 +734,12 @@
 		} {
 			\msg_error:nnn { yoin } { forceopenanyright } { ##1 }
 		}
-		\bool_if:nTF {%%% FOR=1 || (OR=true && FOA=0)
+%    \end{macrocode}
+% Then, we call |cleardoublepage| (our internal variant) if
+%  either |forceopenright| is true
+%  or |openright| is true and |forceopenright| is false.
+%    \begin{macrocode}
+		\bool_if:nT {%%% FOR=1 || (OR=true && FOA=0)
 			\int_compare_p:nNn { \yoin_yoinadd_prop_item:nn { ##1 } { forceopenright } } = { 1 }
 			|| (
 				\l_@@_yoinprocess_openright_bool
@@ -745,19 +748,16 @@
 			)
 		} {
 			\@@_yoinprocess_cleardoublepage:
-			\message { CLEARDOUBLEPAGE }
-		} {
-			\message { NONONONONONOCLEAR }
 		}
 %    \end{macrocode}
-% If \T{output} is true, we use \T{\\includepdf} to include the PDF of the article.
+% If |output| is true, we use |\includepdf| to include the PDF of the article.
 %    \begin{macrocode}
 		\bool_if:NT \l_@@_yoinprocess_output_bool { 
 			\includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
 		}
 %    \end{macrocode}
-% Into file \T{./<articlename>.yoin} we save the data to be transferred to the article:
-%  the first page number (possibly \T{1} if \T{alwayspageone} key is set) and the name of the this document.
+% Into file |./<articlename>.yoin| we save the data to be transferred to the article:
+%  the first page number (possibly |1| if |alwayspageone| key is set) and the name of the this document.
 %    \begin{macrocode}
 		\iow_open:Nn \g_@@_yoinprocess_iow { ##1 .yoin }
 		\bool_if:NTF \l_@@_yoinprocess_alwayspageone_bool { 
