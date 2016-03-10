@@ -142,6 +142,14 @@
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}{msg: boolean-values-only}
+% Message for a non-boolean passed to a bool key.
+%    \begin{macrocode}
+\msg_new:nnn { yoin } { boolean-values-only }
+	{ Key ~ '#1' ~ accepts ~ boolean ~ values ~ only.}
+%    \end{macrocode}
+% \end{macro}
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{Key--value interface for the package setup}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -657,6 +665,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{yoinProcess (undocumented)}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \begin{macro}{ msg: forceopenanyright }
+% Error message for an article having both |forceopenany| and |forceopenright| set.
+%    \begin{macrocode}
+\msg_new:nnn { yoin } { forceopenanyright }
+	{ The ~ article ~ '#1' ~ has ~ both ~ 'forceopenany' ~ and ~ 'forceopenright' ~ keys ~ set. }
+%    \end{macrocode}
+% \end{macro}
 %
 % \begin{macro}{ \yoin_yoinprocess:n }
 % The key macro of the package, to some sense. It takes care of the page numbering of the articles,
