@@ -710,7 +710,7 @@
 %    \end{macrocode}
 % Case |cleardoublepage|, |nosetpagenumber|.
 % We simply do a cleardoublepage.
-% Note that |\__yoin_yoinprocess_cleardoublepage:| modifies the value of |\g_yoin_page_int|
+% Note that |\__yoin_yoinprocess_cleardoublepage:| modifies the value of |\g_@@_page_int|
 %  in a useless way at this place, but we will override the value anyway.
 %    \begin{macrocode}
 			\@@_yoinprocess_cleardoublepage:
@@ -736,7 +736,7 @@
 %  this is necessary because if the output of the process is suppressed by the key |output=false|,
 %  we need to keep track of the page number manually.
 %    \begin{macrocode}
-	\int_gset:Nn \g_yoin_page_int { \value { page } }
+	\int_gset:Nn \g_@@_page_int { \value { page } }
 	\seq_map_inline:Nn \g_yoin_yoinadd_seq {
 %    \end{macrocode}
 % Handing of even/odd/pages.
@@ -779,14 +779,14 @@
 		\bool_if:NTF \l_@@_yoinprocess_alwayspageone_bool { 
 			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ 1 , }
 		} {
-			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }
+			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ \int_use:N \g_@@_page_int , }
 		}
 		\iow_now:Nx \g_@@_yoinprocess_iow { parent ~ = ~ \jobname , }
 		\iow_close:N \g_@@_yoinprocess_iow
 %    \end{macrocode}
 % Update our internal page counter.
 %    \begin{macrocode}
-		\int_gadd:Nn \g_yoin_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
+		\int_gadd:Nn \g_@@_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
 	}
 }
 %    \end{macrocode}
@@ -801,19 +801,19 @@
 %
 %    \begin{macrocode}
 
-\int_new:N \g_yoin_page_int
+\int_new:N \g_@@_page_int
 \iow_new:N \g_@@_yoinprocess_iow
 
 \cs_new_protected:Nn \@@_yoinprocess_cleardoublepage: {
 	\bool_if:NT \l_@@_yoinprocess_output_bool { \cleardoublepage }
-	\int_if_even:nT { \g_yoin_page_int } { \int_gincr:N \g_yoin_page_int }
+	\int_if_even:nT { \g_@@_page_int } { \int_gincr:N \g_@@_page_int }
 }
 
 \cs_new_protected:Nn \@@_yoinprocess_clearonepage: {
 	\bool_if:NT \l_@@_yoinprocess_output_bool {
 		\hbox {}\newpage \if@twocolumn \hbox {}\newpage \fi
 	}
-	\int_gincr:N \g_yoin_page_int
+	\int_gincr:N \g_@@_page_int
 }
 
 \bool_new:N \l_@@_yoinprocess_cleardoublepage_bool
