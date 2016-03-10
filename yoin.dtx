@@ -751,11 +751,11 @@
 			\msg_error:nnn { yoin } { forceopenanyright } { ##1 }
 		}
 %    \end{macrocode}
-% Then, we call |cleardoublepage| (our internal variant) if
-%  either |forceopenright| is true
+% Then, we call |cleardoublepage| (our internal variant) if:
+%  either |forceopenright| is true;
 %  or |openright| is true and |forceopenright| is false.
 %    \begin{macrocode}
-		\bool_if:nT {%%% FOR=1 || (OR=true && FOA=0)
+		\bool_if:nT {
 			\int_compare_p:nNn { \yoin_yoinadd_prop_item:nn { ##1 } { forceopenright } } = { 1 }
 			|| (
 				\l_@@_yoinprocess_openright_bool
