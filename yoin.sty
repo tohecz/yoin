@@ -41,6 +41,8 @@
    \keyval_parse:NNV #1 #2 \l__yoin_keys_tmpa_tl
 }
 \cs_generate_variant:Nn \keyval_parse:NNn { NNV }
+\msg_new:nnn { yoin } { boolean-values-only }
+   { Key ~ '#1' ~ accepts ~ boolean ~ values ~ only.}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bool_new:N \g_yoin_subprocess_bool
@@ -331,6 +333,8 @@
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\msg_new:nnn { yoin } { forceopenanyright }
+   { The ~ article ~ '#1' ~ has ~ both ~ 'forceopenany' ~ and ~ 'forceopenright' ~ keys ~ set. }
 \cs_new_protected:Nn \yoin_yoinprocess:n {
    \keys_set:nn { yoin / yoinprocess } { #1 }
    \clearpage
@@ -350,7 +354,7 @@
          \prg_do_nothing:
       }
    }
-   \int_gset:Nn \g_yoin_page_int { \value { page } }
+   \int_gset:Nn \g__yoin_page_int { \value { page } }
    \seq_map_inline:Nn \g_yoin_yoinadd_seq {
       \bool_if:nT {
          \int_compare_p:nNn {
@@ -360,7 +364,7 @@
       } {
          \msg_error:nnn { yoin } { forceopenanyright } { ##1 }
       }
-      \bool_if:nT {%%% FOR=1 || (OR=true && FOA=0)
+      \bool_if:nT {
          \int_compare_p:nNn { \yoin_yoinadd_prop_item:nn { ##1 } { forceopenright } } = { 1 }
          || (
             \l__yoin_yoinprocess_openright_bool
@@ -377,28 +381,28 @@
       \bool_if:NTF \l__yoin_yoinprocess_alwayspageone_bool {
          \iow_now:Nx \g__yoin_yoinprocess_iow { firstpage ~ = ~ 1 , }
       } {
-         \iow_now:Nx \g__yoin_yoinprocess_iow { firstpage ~ = ~ \int_use:N \g_yoin_page_int , }
+         \iow_now:Nx \g__yoin_yoinprocess_iow { firstpage ~ = ~ \int_use:N \g__yoin_page_int , }
       }
       \iow_now:Nx \g__yoin_yoinprocess_iow { parent ~ = ~ \jobname , }
       \iow_close:N \g__yoin_yoinprocess_iow
-      \int_gadd:Nn \g_yoin_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
+      \int_gadd:Nn \g__yoin_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
    }
 }
 \DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
 
-\int_new:N \g_yoin_page_int
+\int_new:N \g__yoin_page_int
 \iow_new:N \g__yoin_yoinprocess_iow
 
 \cs_new_protected:Nn \__yoin_yoinprocess_cleardoublepage: {
    \bool_if:NT \l__yoin_yoinprocess_output_bool { \cleardoublepage }
-   \int_if_even:nT { \g_yoin_page_int } { \int_gincr:N \g_yoin_page_int }
+   \int_if_even:nT { \g__yoin_page_int } { \int_gincr:N \g__yoin_page_int }
 }
 
 \cs_new_protected:Nn \__yoin_yoinprocess_clearonepage: {
    \bool_if:NT \l__yoin_yoinprocess_output_bool {
       \hbox {}\newpage \if@twocolumn \hbox {}\newpage \fi
    }
-   \int_gincr:N \g_yoin_page_int
+   \int_gincr:N \g__yoin_page_int
 }
 
 \bool_new:N \l__yoin_yoinprocess_cleardoublepage_bool
