@@ -291,12 +291,8 @@
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\cs_new_protected:Nn \__yoin_article_write:n {
-   \immediate \write \@auxout { \token_to_str:N \@writefile { yoin } { #1 } }
-}
-
 \cs_new_protected:Nn \__yoin_article_write_keyval:nn {
-   \__yoin_article_write:n { #1 ~ = ~ #2 , }
+   \iow_now:Nn \g__yoin_article_dotyoin_iow { #1 ~ = ~ #2 , }
 }
 \cs_generate_variant:Nn \__yoin_article_write_keyval:nn { nx, nV }
 
@@ -369,14 +365,12 @@
    \seq_get_right:NN \l__yoin_article_tmpa_seq #1
 }
 
-\AtBeginDocument{ \yoin_atbegindocument: }
-
-\cs_new_protected:Nn \yoin_atbegindocument: {
-   \expandafter \newwrite \csname tf@yoin\endcsname
-   \bool_if:NT \g_yoin_article_bool {
-      \yoin_article_getcurrdir:N \l_yoin_article_currdir_tl
-      \immediate \openout \csname tf@yoin\endcsname \l_yoin_article_currdir_tl .yoin\relax
-      \yoin_article_readkeys:
+\iow_new:N \g__yoin_article_dotyoin_iow
+\bool_if:NT \g_yoin_article_bool {
+   \yoin_article_getcurrdir:N \l_yoin_article_currdir_tl
+   \iow_open:Nn \g__yoin_article_dotyoin_iow { \l_yoin_article_currdir_tl .yoin }
+   \yoin_article_readkeys:
+   \AtBeginDocument {
       \setcounter { page } { \l_yoin_article_firstpage_int }
       \yoin_article_writekeys:
    }
