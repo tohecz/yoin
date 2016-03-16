@@ -298,6 +298,28 @@
 % \end{macro}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{yoinMeta macro --- adding issue's}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \begin{macro}{ \yoinMeta, \yoin_yoinmeta:n }
+%    \begin{macrocode}
+\prop_new:N \l_@@_yoinmeta_prop
+\cs_new_protected:Nn \@@_yoinmeta_storekey:nn {
+	\prop_put:Nnn \l_@@_yoinmeta_prop { #1 } { #2 }
+}
+\cs_new_protected:Nn \@@_yoinmeta_storekey:n {
+	\prop_put:Nnn \l_@@_yoinmeta_prop { #1 } { }
+}
+\cs_new_protected:Nn \yoin_yoinmeta:n {
+	\keyval_parse:NNn \@@_yoinmeta_storekey:n \@@_yoinmeta_storekey:nn { #1 }
+}
+\NewDocumentCommand \yoinMeta { R[]{} } {
+	\yoin_yoinmeta:n { #1 }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{yoinAdd macro --- adding articles to the issue}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -484,18 +506,24 @@
 % Environment |yoinshell| (one key--value argument).
 % We perform some local definitions that should stay local, so we put everything in a group.
 % The keys are set. Then we define the macros --- ``shell commands''.
-% If |ignore| is set, these macros are declared to do nothing,
+% If |ignore| is set or if |subprocess| is passed to the package, these macros are declared to do nothing,
 %  otherwise they are simply wrappers to the \LaTeX3 counterparts.
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_yoinshell_begin:n {
 	\group_begin:
 	\keys_set:nn { yoin / yoinshell } { #1 }
+	\bool_if:NT \g_yoin_subprocess_bool {
+		\bool_set_true:N \l_yoin_yoinshell_ignore_bool
+	}
 	\bool_if:NTF \l_yoin_yoinshell_ignore_bool {
 		\DeclareDocumentCommand \RunForEach { O{} m } { }
 		\DeclareDocumentCommand \Run { O{} m } { }
+		\DeclareDocumentCommand \WriteMeta { O{} } { }
 	} {
 		\DeclareDocumentCommand \RunForEach { O{} m } { \yoin_yoinshell_runforeach:nn { ##1 } { ##2 } }
 		\DeclareDocumentCommand \Run { O{} m } { \yoin_yoinshell_run:nn { ##1 } { ##2 } }
+		\DeclareDocumentCommand \WriteMeta { O{} } { \yoin_yoinshell_writemeta:n { ##1 } }
+		\yoin_yoinshell_writemeta:n { }
 	}
 }
 %    \end{macrocode}
@@ -589,6 +617,27 @@
 %    \end{macrocode}
 % \end{macro}
 %
+%
+% \subsection{WriteMeta}
+%
+% \begin{macro}{ \@@_yoinshell_writemeta:n }
+%    \begin{macrocode}
+\iow_new:N \g_@@_yoinshell_iow
+\cs_new_protected:Nn \yoin_yoinshell_writemeta:n {
+	\group_begin:
+	\yoin_yoinmeta:n { #1 }
+	\iow_open:Nn \g_@@_yoinshell_iow { \g_yoin_jobname_tl .yoin1 }
+	\prop_map_inline:Nn \l_@@_yoinmeta_prop {
+		\iow_now:Nn \g_@@_yoinshell_iow { meta-##1 ~ = ~ ##2, }
+	}
+	\iow_close:N \g_@@_yoinshell_iow
+	\group_end:
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{Article setting stuff (undocumented)}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -653,6 +702,14 @@
 		}
 	}
 	\bool_gset_false:N \g_@@_article_readkeys_bool
+}
+
+\cs_new:Nn \yoin_article_meta:n {
+	\prop_item:Nn \l_@@_article_readkeys_prop { meta-#1 }
+}
+
+\NewDocumentCommand \yoinArticleMeta { m } {
+	\yoin_article_meta:n { #1 }
 }
 
 \tl_new:N \l_@@_article_tmpa_tl

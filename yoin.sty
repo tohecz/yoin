@@ -102,6 +102,21 @@
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\prop_new:N \l__yoin_yoinmeta_prop
+\cs_new_protected:Nn \__yoin_yoinmeta_storekey:nn {
+   \prop_put:Nnn \l__yoin_yoinmeta_prop { #1 } { #2 }
+}
+\cs_new_protected:Nn \__yoin_yoinmeta_storekey:n {
+   \prop_put:Nnn \l__yoin_yoinmeta_prop { #1 } { }
+}
+\cs_new_protected:Nn \yoin_yoinmeta:n {
+   \keyval_parse:NNn \__yoin_yoinmeta_storekey:n \__yoin_yoinmeta_storekey:nn { #1 }
+}
+\NewDocumentCommand \yoinMeta { R[]{} } {
+   \yoin_yoinmeta:n { #1 }
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \seq_new:N \g_yoin_yoinadd_seq
 \cs_new:Nn \yoin_yoinadd_prop:n {
    g__yoin_article_#1_prop
@@ -193,12 +208,18 @@
 \cs_new_protected:Nn \__yoin_yoinshell_begin:n {
    \group_begin:
    \keys_set:nn { yoin / yoinshell } { #1 }
+   \bool_if:NT \g_yoin_subprocess_bool {
+      \bool_set_true:N \l_yoin_yoinshell_ignore_bool
+   }
    \bool_if:NTF \l_yoin_yoinshell_ignore_bool {
       \DeclareDocumentCommand \RunForEach { O{} m } { }
       \DeclareDocumentCommand \Run { O{} m } { }
+      \DeclareDocumentCommand \WriteMeta { O{} } { }
    } {
       \DeclareDocumentCommand \RunForEach { O{} m } { \yoin_yoinshell_runforeach:nn { ##1 } { ##2 } }
       \DeclareDocumentCommand \Run { O{} m } { \yoin_yoinshell_run:nn { ##1 } { ##2 } }
+      \DeclareDocumentCommand \WriteMeta { O{} } { \yoin_yoinshell_writemeta:n { ##1 } }
+      \yoin_yoinshell_writemeta:n { }
    }
 }
 \cs_new_protected:Nn \__yoin_yoinshell_end: {
@@ -249,6 +270,17 @@
       \__yoin_yoinshell_shellescape:n { #2 }
       \group_end:
    }
+}
+\iow_new:N \g__yoin_yoinshell_iow
+\cs_new_protected:Nn \yoin_yoinshell_writemeta:n {
+   \group_begin:
+   \yoin_yoinmeta:n { #1 }
+   \iow_open:Nn \g__yoin_yoinshell_iow { \g_yoin_jobname_tl .yoin1 }
+   \prop_map_inline:Nn \l__yoin_yoinmeta_prop {
+      \iow_now:Nn \g__yoin_yoinshell_iow { meta-##1 ~ = ~ ##2, }
+   }
+   \iow_close:N \g__yoin_yoinshell_iow
+   \group_end:
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -310,6 +342,14 @@
       }
    }
    \bool_gset_false:N \g__yoin_article_readkeys_bool
+}
+
+\cs_new:Nn \yoin_article_meta:n {
+   \prop_item:Nn \l__yoin_article_readkeys_prop { meta-#1 }
+}
+
+\NewDocumentCommand \yoinArticleMeta { m } {
+   \yoin_article_meta:n { #1 }
 }
 
 \tl_new:N \l__yoin_article_tmpa_tl
