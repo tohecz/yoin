@@ -271,6 +271,13 @@
       \group_end:
    }
 }
+\cs_new_protected:Nn \yoin_yoinshell_run:nn {
+   \group_begin:
+   \keys_set:nn { yoin / run } { #1 }
+   \let \Jobname \c_job_name_tl
+   \__yoin_yoinshell_shellescape:n { #2 }
+   \group_end:
+}
 \iow_new:N \g__yoin_yoinshell_iow
 \cs_new_protected:Nn \yoin_yoinshell_writemeta:n {
    \group_begin:
