@@ -617,6 +617,19 @@
 %    \end{macrocode}
 % \end{macro}
 %
+% \subsection{Run}
+%
+% \begin{macro}{ \@@_yoinshell_run:nn }
+%    \begin{macrocode}
+\cs_new_protected:Nn \yoin_yoinshell_run:nn {
+	\group_begin:
+	\keys_set:nn { yoin / run } { #1 }
+	\let \Jobname \c_job_name_tl
+	\@@_yoinshell_shellescape:n { #2 }
+	\group_end:
+}
+%    \end{macrocode}
+% \end{macro}
 %
 % \subsection{WriteMeta}
 %
