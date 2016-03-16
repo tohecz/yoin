@@ -122,11 +122,11 @@
 %  (and spaces of course as needed).
 %    \begin{macrocode}
 \tl_new:N \l_@@_keys_tmpa_tl
+\cs_generate_variant:Nn \keys_set:nn { nV }
 \cs_new_protected:Nn \yoin_keys_set_from_file:nn {
 	\tl_set_from_file:Nnn \l_@@_keys_tmpa_tl { } { #2 }
 	\keys_set:nV { #1 } \l_@@_keys_tmpa_tl
 }
-\cs_generate_variant:Nn \keys_set:nn { nV }
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\yoin_keyval_parse_from_file:nn}
@@ -134,11 +134,11 @@
 % No checks are done here, nothing like comments could be used, the keys should be separated by a comma
 %  (and spaces of course as needed).
 %    \begin{macrocode}
+\cs_generate_variant:Nn \keyval_parse:NNn { NNV }
 \cs_new_protected:Nn \yoin_keyval_parse_from_file:NNn {
 	\tl_set_from_file:Nnn \l_@@_keys_tmpa_tl { } { #3 }
 	\keyval_parse:NNV #1 #2 \l_@@_keys_tmpa_tl
 }
-\cs_generate_variant:Nn \keyval_parse:NNn { NNV }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -389,7 +389,7 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ msg: yoinadd-duplicatearticle , msg: yoinadd-dotyoinmissing }
-% The error messages: for adding a duplicate article and for adding an article with no |\#1/\#1.yoin| file.
+% The error messages: for adding a duplicate article and for adding an article with no |#1/#1.yoin| file.
 %    \begin{macrocode}
 \msg_new:nnn { yoin } { yoinadd-duplicatearticle }
 	{ The ~ article ~ "#1" ~ has ~ been ~ already ~ processed ~ by ~ \token_to_str:N \yoinAdd ~.}
@@ -512,7 +512,9 @@
 }
 %    \end{macrocode}
 % \end{macro}
-% The |yoinshell| command |\RunForEach|.
+%
+% \subsection{RunForEach}
+%
 % \begin{macro}{ \l_@@_yoinshell_runforarticle_tag_tl , \l_@@_yoinshell_runforeach_onlytag_tl }
 % First, two |tl|s that will store tags: One for the tag of the article,
 %  one that could be passed to |\RunForEach| that is initially set to |\q_no_value|.
@@ -535,7 +537,7 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ \@@_yoinshell_runforarticle_keyfromprop:nnN }
-% This macro lets |\#3| to the value of property |\#2| of article |\#1|.
+% This macro lets |#3| to the value of property |#2| of article |#1|.
 % It makes it an empty definition if the property is unset.
 %    \begin{macrocode}
 \tl_new:N \l_@@_yoinshell_runforarticle_tmpa_tl
@@ -656,10 +658,10 @@
 \tl_new:N \l_@@_article_tmpa_tl
 \seq_new:N \l_@@_article_tmpa_seq
 \tl_new:N \l_yoin_article_currdir_tl
+\cs_generate_variant:Nn \regex_extract_once:nnN { nV }
 \cs_new_protected:Nn \yoin_article_getcurrdir:N {
 	\tl_set:Nx \l_@@_article_tmpa_tl { \currfileabsdir }
-	\cs_generate_variant:Nn \regex_extract_once:nnNF { nV }
-	\regex_extract_once:nVNF { /([^/]+)/\Z } \l_@@_article_tmpa_tl \l_@@_article_tmpa_seq { \error }
+	\regex_extract_once:nVN { /([^/]+)/\Z } \l_@@_article_tmpa_tl \l_@@_article_tmpa_seq
 	\seq_get_right:NN \l_@@_article_tmpa_seq #1
 }
 
