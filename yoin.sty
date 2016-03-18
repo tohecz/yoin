@@ -352,6 +352,12 @@
    \prop_item:Nn \l__yoin_article_readkeys_prop { meta-#1 }
 }
 
+\cs_new:Nn \yoin_article_meta_gset_tl_default:Nnn {
+   \prop_get:NnNF \l__yoin_article_readkeys_prop { meta-#2 } #1 {
+      \tl_set:Nn #1 { #3 }
+   }
+}
+
 \NewDocumentCommand \yoinArticleMeta { m } {
    \yoin_article_meta:n { #1 }
 }
