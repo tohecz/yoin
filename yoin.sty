@@ -283,7 +283,7 @@
 \cs_new_protected:Nn \yoin_yoinshell_writemeta:n {
    \group_begin:
    \yoin_yoinmeta:n { #1 }
-   \iow_open:Nn \g__yoin_yoinshell_iow { \g_yoin_jobname_tl .yoin1 }
+   \iow_open:Nn \g__yoin_yoinshell_iow { \g_yoin_jobname_tl .yoin }
    \prop_map_inline:Nn \l__yoin_yoinmeta_prop {
       \iow_now:Nn \g__yoin_yoinshell_iow { meta-##1 ~ = ~ ##2, }
    }
@@ -325,8 +325,8 @@
       ,
 
    parent .code:n =
-      \file_if_exist:nT { ../ #1 .yoin1 } {
-         \yoin_keys_set_from_file:nn { yoin / toarticle } { ../ #1 .yoin1 }
+      \file_if_exist:nT { ../ #1 .yoin } {
+         \yoin_keys_set_from_file:nn { yoin / toarticle } { ../ #1 .yoin }
       }
       \yoin_article_set_readkey:nn { parent } { #1 }
       ,
@@ -341,8 +341,8 @@
 
 \cs_new_protected:Nn \yoin_article_readkeys: {
    \bool_if:NT \g__yoin_article_readkeys_bool {
-      \file_if_exist:nT { ../ \l_yoin_article_currdir_tl .yoin } {
-         \yoin_keys_set_from_file:nn { yoin / toarticle } { ../ \l_yoin_article_currdir_tl .yoin }
+      \file_if_exist:nT { ../ \l_yoin_article_currdir_tl .yoin1 } {
+         \yoin_keys_set_from_file:nn { yoin / toarticle } { ../ \l_yoin_article_currdir_tl .yoin1 }
       }
    }
    \bool_gset_false:N \g__yoin_article_readkeys_bool
@@ -422,7 +422,7 @@
       \bool_if:NT \l__yoin_yoinprocess_output_bool {
          \includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
       }
-      \iow_open:Nn \g__yoin_yoinprocess_iow { ##1 .yoin }
+      \iow_open:Nn \g__yoin_yoinprocess_iow { ##1 .yoin1 }
       \bool_if:NTF \l__yoin_yoinprocess_alwayspageone_bool {
          \iow_now:Nx \g__yoin_yoinprocess_iow { firstpage ~ = ~ 1 , }
       } {
