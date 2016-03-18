@@ -263,11 +263,12 @@
 %    \end{macrocode}
 % A key whose value is stored in a token list.
 %    \begin{macrocode}
-	jobname .tl_gset:N = \g_yoin_jobname_tl
+	jobname .tl_gset:N = \g_yoin_jobname_tl,
 %    \end{macrocode}
 %    \begin{macrocode}
-% A key that takes a key-value list and stores it in a prop.
+% A key that allows |\yoinMeta| to be called from within the package options.
 %    \begin{macrocode}
+	meta .code:n = \yoin_yoinmeta:n { #1 },
 %    \end{macrocode}
 %    \begin{macrocode}
 }

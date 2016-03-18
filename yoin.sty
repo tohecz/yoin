@@ -91,7 +91,8 @@
       \seq_gset_from_clist:Nn \g_yoin_onlytags_seq { #1 }
       \bool_gset_true:N \g_yoin_onlytags_bool
       ,
-   jobname .tl_gset:N = \g_yoin_jobname_tl
+   jobname .tl_gset:N = \g_yoin_jobname_tl,
+   meta .code:n = \yoin_yoinmeta:n { #1 },
 }
 \ProcessKeysPackageOptions { yoin / general }
 \cs_new_protected:Nn \yoin_setup:n {
