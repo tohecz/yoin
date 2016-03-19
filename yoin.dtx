@@ -653,6 +653,105 @@
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{macro yoinForEach}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \begin{macro}{ \l_@@_yoinforeach_article_tag_tl , \l_@@_yoinforeach_onlytag_tl }
+% First, two |tl|s that will store tags: One for the tag of the article,
+%  one that could be passed to |\yoinForEach| that is initially set to |\q_no_value|.
+%    \begin{macrocode}
+\tl_new:N \l_@@_yoinforeach_article_tag_tl
+\tl_new:N \l_@@_yoinforeach_onlytag_tl
+\tl_set:Nn \l_@@_yoinforeach_onlytag_tl { \q_no_value }
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ yoin / yoinforeach }
+% So far, the only key--val passable to |\yoinForEach| is |onlytag|,
+%  which tests for the tag to be declared and passes it to |\l_@@_yoinforeach_onlytag_tl|.
+%    \begin{macrocode}
+\keys_define:nn { yoin / yoinforeach } {	
+	onlytag .code:n =
+		\@@_error_if_tag_undefined:n { #1 }
+		\tl_set:Nn \l_@@_yoinforeach_onlytag_tl { #1 }
+		,	
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ \@@_yoinforeach_article_keyfromprop:nnN }
+% This macro lets |#3| to the value of property |#2| of article |#1|.
+% It makes it an empty definition if the property is unset.
+%    \begin{macrocode}
+\tl_new:N \l_@@_yoinforeach_tmpa_tl
+\cs_new_protected:Nn \@@_yoinforeach_article_keyfromprop:nnN {
+	\prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { #2 } \l_@@_yoinforeach_tmpa_tl
+	\quark_if_no_value:NTF \l_@@_yoinforeach_article_tmpa_tl {
+		\def #3 {}
+	} {
+		\let #3 \l_@@_yoinforeach_tmpa_tl
+	}
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ \@@_yoinforeach_article_metaitem:nnN }
+% This macro lets |#3| to the value of property |#2| of article |#1|.
+% It makes it an empty definition if the property is unset.
+%    \begin{macrocode}
+\cs_new:Nn \@@_yoinforeach_article_metaitem:nn {
+	\yoin_yoinadd_prop_item:nn { #1 } { article-#2 }
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ \@@_yoinforeach:nn }
+% |\yoinForEach| itself just sets the keys (in a group to make things local)
+%  and then calls |\@@_yoinforeach_article:nn| on each article.
+%    \begin{macrocode}
+\cs_new_protected:Nn \yoin_yoinforeach:nn {
+	\group_begin:
+	\keys_set:nn { yoin / yoinforeach } { #1 }
+	\seq_map_inline:Nn \g_yoin_yoinadd_seq { \@@_yoinforeach_article:nn { ##1 } { #2 } }
+	\group_end:
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ \@@_yoinshell_runforarticle:nn }
+% If the tag passed to |onlytag| of |\RunForEach| is identical to the tag of the article
+%  or if any of them is not set, we do what should be done, otherwise nothing is done (the tags do not match).
+% We only extract the |prop| to publically available macros like |\Article|, |\Jobname| etc.\@
+% (in a group to make this local), and then run the command in shell escape.
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_yoinforeach_article:nn {
+	\prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { tag } \l_@@_yoinforeach_article_tag_tl
+	\bool_if:nT {
+		\quark_if_no_value_p:N \l_@@_yoinforeach_article_tag_tl
+		||
+		\quark_if_no_value_p:N \l_@@_yoinforeach_onlytag_tl
+		||
+		\tl_if_eq_p:NN \l_@@_yoinforeach_onlytag_tl \l_@@_yoinforeach_article_tag_tl
+	}
+	{
+		\group_begin:
+		\DeclareDocumentCommand \Meta { m } { \@@_yoinforeach_article_metaitem:nn { #1 } { ##1 } }
+		\@@_yoinforeach_article_keyfromprop:nnN { #1 } { article } \Article
+		\@@_yoinforeach_article_keyfromprop:nnN { #1 } { jobname } \Jobname
+		\@@_yoinforeach_article_keyfromprop:nnN { #1 } { firstpage } \FirstPage
+		#2
+		\group_end:
+	}
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{ \yoinForEach }
+% One optional key--val argument, one mandatory argument --- the text to be typeset.
+%    \begin{macrocode}
+\NewDocumentCommand \yoinForEach { O{} +m } {
+	\yoin_yoinforeach:nn { #1 } { #2 }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{Article setting stuff (undocumented)}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

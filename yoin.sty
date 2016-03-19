@@ -292,6 +292,57 @@
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tl_new:N \l__yoin_yoinforeach_article_tag_tl
+\tl_new:N \l__yoin_yoinforeach_onlytag_tl
+\tl_set:Nn \l__yoin_yoinforeach_onlytag_tl { \q_no_value }
+\keys_define:nn { yoin / yoinforeach } {
+   onlytag .code:n =
+      \__yoin_error_if_tag_undefined:n { #1 }
+      \tl_set:Nn \l__yoin_yoinforeach_onlytag_tl { #1 }
+      ,
+}
+\tl_new:N \l__yoin_yoinforeach_tmpa_tl
+\cs_new_protected:Nn \__yoin_yoinforeach_article_keyfromprop:nnN {
+   \prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { #2 } \l__yoin_yoinforeach_tmpa_tl
+   \quark_if_no_value:NTF \l__yoin_yoinforeach_article_tmpa_tl {
+      \def #3 {(nic)}
+   } {
+      \let #3 \l__yoin_yoinforeach_tmpa_tl
+   }
+}
+\cs_new:Nn \__yoin_yoinforeach_article_metaitem:nn {
+   \yoin_yoinadd_prop_item:nn { #1 } { article-#2 }
+}
+\cs_new_protected:Nn \yoin_yoinforeach:nn {
+   \group_begin:
+   \keys_set:nn { yoin / yoinforeach } { #1 }
+   \seq_map_inline:Nn \g_yoin_yoinadd_seq { \__yoin_yoinforeach_article:nn { ##1 } { #2 } }
+   \group_end:
+}
+\cs_new_protected:Nn \__yoin_yoinforeach_article:nn {
+   \prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { tag } \l__yoin_yoinforeach_article_tag_tl
+   \bool_if:nT {
+      \quark_if_no_value_p:N \l__yoin_yoinforeach_article_tag_tl
+      ||
+      \quark_if_no_value_p:N \l__yoin_yoinforeach_onlytag_tl
+      ||
+      \tl_if_eq_p:NN \l__yoin_yoinforeach_onlytag_tl \l__yoin_yoinforeach_article_tag_tl
+   }
+   {
+      \group_begin:
+      \DeclareDocumentCommand \Meta { m } { \__yoin_yoinforeach_article_metaitem:nn { #1 } { ##1 } }
+      \__yoin_yoinforeach_article_keyfromprop:nnN { #1 } { article } \Article
+      \__yoin_yoinforeach_article_keyfromprop:nnN { #1 } { jobname } \Jobname
+      \__yoin_yoinforeach_article_keyfromprop:nnN { #1 } { firstpage } \FirstPage
+      #2
+      \group_end:
+   }
+}
+\NewDocumentCommand \yoinForEach { O{} +m } {
+   \yoin_yoinforeach:nn { #1 } { #2 }
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cs_new_protected:Nn \__yoin_article_write_keyval:nn {
    \iow_now:Nn \g__yoin_article_dotyoin_iow { #1 ~ = ~ #2 , }
 }
