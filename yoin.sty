@@ -305,7 +305,7 @@
 \cs_new_protected:Nn \__yoin_yoinforeach_article_keyfromprop:nnN {
    \prop_get:cnN { \yoin_yoinadd_prop:n { #1 } } { #2 } \l__yoin_yoinforeach_tmpa_tl
    \quark_if_no_value:NTF \l__yoin_yoinforeach_article_tmpa_tl {
-      \def #3 {(nic)}
+      \def #3 {}
    } {
       \let #3 \l__yoin_yoinforeach_tmpa_tl
    }

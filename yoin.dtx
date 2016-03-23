@@ -299,7 +299,7 @@
 % \end{macro}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{yoinMeta macro --- adding issue's}
+% \section{yoinMeta macro --- adding issue's metadata}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % \begin{macro}{ \yoinMeta, \yoin_yoinmeta:n }
@@ -940,7 +940,7 @@
 %    \end{macrocode}
 % Then, we call |cleardoublepage| (our internal variant) if:
 %  either |forceopenright| is true;
-%  or |openright| is true and |forceopenright| is false.
+%  or |openright| is true and |forceopenany| is false.
 %    \begin{macrocode}
 		\bool_if:nT {
 			\int_compare_p:nNn { \yoin_yoinadd_prop_item:nn { ##1 } { forceopenright } } = { 1 }
