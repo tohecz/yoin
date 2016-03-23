@@ -986,41 +986,75 @@
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}{ \g_@@_page_int , \g_@@_yoinprocess_iow }
+% A private counter for tracking the page numbers, and an output stream for writing to |.yoin1| files.
 %    \begin{macrocode}
-
 \int_new:N \g_@@_page_int
 \iow_new:N \g_@@_yoinprocess_iow
-
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{ \@@_yoinprocess_cleardoublepage: }
+% If |output| is true, issue |\cleardoublepage|.
+% Since this macro is always called after a page is finished (either after |\includepdf| or |\clearpage|),
+%  to correct the private page counter, we only need to round its value up to an odd number.
+%    \begin{macrocode}
 \cs_new_protected:Nn \@@_yoinprocess_cleardoublepage: {
 	\bool_if:NT \l_@@_yoinprocess_output_bool { \cleardoublepage }
 	\int_if_even:nT { \g_@@_page_int } { \int_gincr:N \g_@@_page_int }
 }
-
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{ \@@_yoinprocess_clearonepage: }
+% Clear exactly one page. Code borrowed from \LaTeXe\@ kernel's |\cleardoublepage|.
+%    \begin{macrocode}
 \cs_new_protected:Nn \@@_yoinprocess_clearonepage: {
 	\bool_if:NT \l_@@_yoinprocess_output_bool {
 		\hbox {}\newpage \if@twocolumn \hbox {}\newpage \fi
 	}
 	\int_gincr:N \g_@@_page_int
 }
-
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{ \l_@@_yoinprocess_cleardoublepage_bool , \l_@@_yoinprocess_output_bool , \l_@@_yoinprocess_openright_bool , \l_@@_yoinprocess_alwayspageone_bool , \l_@@_yoinprocess_setpagenumber_bool , \l_@@_yoinprocess_setpagenumber_int }
+% Booleans and counters for values of the keys defined below.
+%    \begin{macrocode}
 \bool_new:N \l_@@_yoinprocess_cleardoublepage_bool
 \bool_new:N \l_@@_yoinprocess_output_bool
 \bool_new:N \l_@@_yoinprocess_openright_bool
 \bool_new:N \l_@@_yoinprocess_alwayspageone_bool
 \bool_new:N \l_@@_yoinprocess_setpagenumber_bool
 \int_new:N \l_@@_yoinprocess_setpagenumber_int
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{ yoin / yoinprocess }
+% Keys for |yoinprocess|: several boolean keys (including |openany| as the negation of |openright|),
+%  and |setpagenumber|, taking as a value either a number or |false| (if a number is input, it is stored in a counter
+%  with the appropriate boolean set |true|).
+%    \begin{macrocode}
 \keys_define:nn { yoin / yoinprocess } {
-
+%    \end{macrocode}
+%    \begin{macrocode}
 	cleardoublepage .bool_set:N = \l_@@_yoinprocess_cleardoublepage_bool ,
 	cleardoublepage .initial:n = { false },
-
+%    \end{macrocode}
+%    \begin{macrocode}
 	output .bool_set:N = \l_@@_yoinprocess_output_bool ,
 	output .initial:n = { true },
-
+%    \end{macrocode}
+%    \begin{macrocode}
 	openright .bool_set:N = \l_@@_yoinprocess_openright_bool ,
 	openany .bool_set_inverse:N = \l_@@_yoinprocess_openright_bool ,
 	openright .initial:n = { false },
-
+%    \end{macrocode}
+%    \begin{macrocode}
+	alwayspageone .bool_set:N = \l_@@_yoinprocess_alwayspageone_bool ,
+	alwayspageone .initial:n = { false },
+%    \end{macrocode}
+%    \begin{macrocode}
 	setpagenumber .code:n =
 		\str_if_eq:nnTF { #1 } { false } {
 			\bool_set_false:N \l_@@_yoinprocess_setpagenumber_bool
@@ -1030,13 +1064,11 @@
 		}
 		,
 	setpagenumber .initial:n = { false },
-	
-	alwayspageone .bool_set:N = \l_@@_yoinprocess_alwayspageone_bool ,
-	alwayspageone .initial:n = { false },
-
-}
-
 %    \end{macrocode}
+%    \begin{macrocode}
+}
+%    \end{macrocode}
+% \end{macro}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{Experimental}

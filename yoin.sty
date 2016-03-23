@@ -491,22 +491,18 @@
    }
 }
 \DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
-
 \int_new:N \g__yoin_page_int
 \iow_new:N \g__yoin_yoinprocess_iow
-
 \cs_new_protected:Nn \__yoin_yoinprocess_cleardoublepage: {
    \bool_if:NT \l__yoin_yoinprocess_output_bool { \cleardoublepage }
    \int_if_even:nT { \g__yoin_page_int } { \int_gincr:N \g__yoin_page_int }
 }
-
 \cs_new_protected:Nn \__yoin_yoinprocess_clearonepage: {
    \bool_if:NT \l__yoin_yoinprocess_output_bool {
       \hbox {}\newpage \if@twocolumn \hbox {}\newpage \fi
    }
    \int_gincr:N \g__yoin_page_int
 }
-
 \bool_new:N \l__yoin_yoinprocess_cleardoublepage_bool
 \bool_new:N \l__yoin_yoinprocess_output_bool
 \bool_new:N \l__yoin_yoinprocess_openright_bool
@@ -514,17 +510,15 @@
 \bool_new:N \l__yoin_yoinprocess_setpagenumber_bool
 \int_new:N \l__yoin_yoinprocess_setpagenumber_int
 \keys_define:nn { yoin / yoinprocess } {
-
    cleardoublepage .bool_set:N = \l__yoin_yoinprocess_cleardoublepage_bool ,
    cleardoublepage .initial:n = { false },
-
    output .bool_set:N = \l__yoin_yoinprocess_output_bool ,
    output .initial:n = { true },
-
    openright .bool_set:N = \l__yoin_yoinprocess_openright_bool ,
    openany .bool_set_inverse:N = \l__yoin_yoinprocess_openright_bool ,
    openright .initial:n = { false },
-
+   alwayspageone .bool_set:N = \l__yoin_yoinprocess_alwayspageone_bool ,
+   alwayspageone .initial:n = { false },
    setpagenumber .code:n =
       \str_if_eq:nnTF { #1 } { false } {
          \bool_set_false:N \l__yoin_yoinprocess_setpagenumber_bool
@@ -534,12 +528,7 @@
       }
       ,
    setpagenumber .initial:n = { false },
-
-   alwayspageone .bool_set:N = \l__yoin_yoinprocess_alwayspageone_bool ,
-   alwayspageone .initial:n = { false },
-
 }
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cs_new:Nn \yoin_blabla: {
