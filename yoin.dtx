@@ -628,9 +628,13 @@
 \tl_new:N \l_@@_yoinshell_autorunforeach_engine_tl
 \tl_set:Nn \l_@@_yoinshell_autorunforeach_engine_tl { \q_no_value }
 \tl_const:Nn \c_@@_yoinshell_autorunforeach_engine_pdflatex_tl
-	{ pdflatex ~ -output-directory ~ \Article/ ~ -recorder ~ \Article/\Jobname }
+	{ pdflatex ~ -output-directory ~ ./\Article/ ~ -recorder ~ ./\Article/\Jobname }
+\tl_const:Nn \c_@@_yoinshell_autorunforeach_engine_lualatex_tl
+	{ lualatex ~ --output-directory ~ ./\Article/ ~ --recorder ~ ./\Article/\Jobname }
 \msg_new:nnn { yoin } { autorunforeach-noengine }
-	{ Engine ~ unspecified ~ for ~ \token_to_str:N \AutoRunForEach .~ I'm ~ trying  ~ `pdflatex'. }
+	{ Engine ~ unspecified ~ for ~ \token_to_str:N \AutoRunForEach . ~ I'm ~ trying  ~ `pdflatex'. }
+\msg_new:nnn { yoin } { autorunforeach-unknown-engine }
+	{ Engine ~ `#1' ~ unknown. ~ I'm ~ trying  ~ `pdflatex'. }
 \keys_define:nn { yoin / autorunforeach } {
 	onlytag .code:n = \keys_set:nn { yoin / runforeach } { onlytag = { #1 } } ,
 	engine .tl_set:N = \l_@@_yoinshell_autorunforeach_engine_tl ,
@@ -642,7 +646,10 @@
 		\msg_error:nn { yoin } { autorunforeach-noengine }
 		\tl_set:Nn \l_@@_yoinshell_autorunforeach_engine_tl { pdflatex }
 	}
-	% Add a test for engine defined.
+	\tl_if_exist:cF { c_@@_yoinshell_autorunforeach_engine_ \l_@@_yoinshell_autorunforeach_engine_tl _tl } {
+		\msg_error:nnx { yoin } { autorunforeach-unknown-engine } { \l_@@_yoinshell_autorunforeach_engine_tl }
+		\tl_set:Nn \l_@@_yoinshell_autorunforeach_engine_tl { pdflatex }
+	}
 	\seq_map_inline:Nn \g_yoin_yoinadd_seq {
 		\@@_yoinshell_runforarticle:nv { ##1 }
 			{ c_@@_yoinshell_autorunforeach_engine_ \l_@@_yoinshell_autorunforeach_engine_tl _tl }
