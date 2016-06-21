@@ -214,10 +214,12 @@
    }
    \bool_if:NTF \l_yoin_yoinshell_ignore_bool {
       \DeclareDocumentCommand \RunForEach { O{} m } { }
+      \DeclareDocumentCommand \AutoRunForEach { O{} } { }
       \DeclareDocumentCommand \Run { O{} m } { }
       \DeclareDocumentCommand \WriteMeta { O{} } { }
    } {
       \DeclareDocumentCommand \RunForEach { O{} m } { \yoin_yoinshell_runforeach:nn { ##1 } { ##2 } }
+      \DeclareDocumentCommand \AutoRunForEach { O{} } { \yoin_yoinshell_autorunforeach:n { ##1 } }
       \DeclareDocumentCommand \Run { O{} m } { \yoin_yoinshell_run:nn { ##1 } { ##2 } }
       \DeclareDocumentCommand \WriteMeta { O{} } { \yoin_yoinshell_writemeta:n { ##1 } }
       \yoin_yoinshell_writemeta:n { }
@@ -271,6 +273,31 @@
       \__yoin_yoinshell_shellescape:n { #2 }
       \group_end:
    }
+}
+\cs_generate_variant:Nn \__yoin_yoinshell_runforarticle:nn { nv }
+\tl_new:N \l__yoin_yoinshell_autorunforeach_engine_tl
+\tl_set:Nn \l__yoin_yoinshell_autorunforeach_engine_tl { \q_no_value }
+\tl_const:Nn \c__yoin_yoinshell_autorunforeach_engine_pdflatex_tl
+   { pdflatex ~ -output-directory ~ \Article/ ~ -recorder ~ \Article/\Jobname }
+\msg_new:nnn { yoin } { autorunforeach-noengine }
+   { Engine ~ unspecified ~ for ~ \token_to_str:N \AutoRunForEach .~ I'm ~ trying  ~ `pdflatex'. }
+\keys_define:nn { yoin / autorunforeach } {
+   onlytag .code:n = \keys_set:nn { yoin / runforeach } { onlytag = { #1 } } ,
+   engine .tl_set:N = \l__yoin_yoinshell_autorunforeach_engine_tl ,
+}
+\cs_new_protected:Nn \yoin_yoinshell_autorunforeach:n {
+   \group_begin:
+   \keys_set:nn { yoin / autorunforeach } { #1 }
+   \quark_if_no_value:NT \l__yoin_yoinshell_autorunforeach_engine_tl {
+      \msg_error:nn { yoin } { autorunforeach-noengine }
+      \tl_set:Nn \l__yoin_yoinshell_autorunforeach_engine_tl { pdflatex }
+   }
+   % Add a test for engine defined.
+   \seq_map_inline:Nn \g_yoin_yoinadd_seq {
+      \__yoin_yoinshell_runforarticle:nv { ##1 }
+         { c__yoin_yoinshell_autorunforeach_engine_ \l__yoin_yoinshell_autorunforeach_engine_tl _tl }
+   }
+   \group_end:
 }
 \cs_new_protected:Nn \yoin_yoinshell_run:nn {
    \group_begin:

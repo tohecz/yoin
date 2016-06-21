@@ -518,10 +518,12 @@
 	}
 	\bool_if:NTF \l_yoin_yoinshell_ignore_bool {
 		\DeclareDocumentCommand \RunForEach { O{} m } { }
+		\DeclareDocumentCommand \AutoRunForEach { O{} } { }
 		\DeclareDocumentCommand \Run { O{} m } { }
 		\DeclareDocumentCommand \WriteMeta { O{} } { }
 	} {
 		\DeclareDocumentCommand \RunForEach { O{} m } { \yoin_yoinshell_runforeach:nn { ##1 } { ##2 } }
+		\DeclareDocumentCommand \AutoRunForEach { O{} } { \yoin_yoinshell_autorunforeach:n { ##1 } }
 		\DeclareDocumentCommand \Run { O{} m } { \yoin_yoinshell_run:nn { ##1 } { ##2 } }
 		\DeclareDocumentCommand \WriteMeta { O{} } { \yoin_yoinshell_writemeta:n { ##1 } }
 		\yoin_yoinshell_writemeta:n { }
@@ -557,7 +559,7 @@
 % So far, the only key--val passable to |\RunForEach| is |onlytag|,
 %  which tests for the tag to be declared and passes it to |\l_@@_yoinshell_runforeach_onlytag_tl|.
 %    \begin{macrocode}
-\keys_define:nn { yoin / runforeach } {	
+\keys_define:nn { yoin / runforeach } {
 	onlytag .code:n =
 		\@@_error_if_tag_undefined:n { #1 }
 		\tl_set:Nn \l_@@_yoinshell_runforeach_onlytag_tl { #1 }
@@ -615,8 +617,39 @@
 		\group_end:
 	}
 }
+\cs_generate_variant:Nn \@@_yoinshell_runforarticle:nn { nv }
 %    \end{macrocode}
 % \end{macro}
+%
+%
+% \subsection{AutoRunForEach}
+%
+%    \begin{macrocode}
+\tl_new:N \l_@@_yoinshell_autorunforeach_engine_tl
+\tl_set:Nn \l_@@_yoinshell_autorunforeach_engine_tl { \q_no_value }
+\tl_const:Nn \c_@@_yoinshell_autorunforeach_engine_pdflatex_tl
+	{ pdflatex ~ -output-directory ~ \Article/ ~ -recorder ~ \Article/\Jobname }
+\msg_new:nnn { yoin } { autorunforeach-noengine }
+	{ Engine ~ unspecified ~ for ~ \token_to_str:N \AutoRunForEach .~ I'm ~ trying  ~ `pdflatex'. }
+\keys_define:nn { yoin / autorunforeach } {
+	onlytag .code:n = \keys_set:nn { yoin / runforeach } { onlytag = { #1 } } ,
+	engine .tl_set:N = \l_@@_yoinshell_autorunforeach_engine_tl ,
+}
+\cs_new_protected:Nn \yoin_yoinshell_autorunforeach:n {
+	\group_begin:
+	\keys_set:nn { yoin / autorunforeach } { #1 }
+	\quark_if_no_value:NT \l_@@_yoinshell_autorunforeach_engine_tl {
+		\msg_error:nn { yoin } { autorunforeach-noengine }
+		\tl_set:Nn \l_@@_yoinshell_autorunforeach_engine_tl { pdflatex }
+	}
+	% Add a test for engine defined.
+	\seq_map_inline:Nn \g_yoin_yoinadd_seq {
+		\@@_yoinshell_runforarticle:nv { ##1 }
+			{ c_@@_yoinshell_autorunforeach_engine_ \l_@@_yoinshell_autorunforeach_engine_tl _tl }
+	}
+	\group_end:
+}
+%    \end{macrocode}
 %
 % \subsection{Run}
 %
@@ -957,7 +990,7 @@
 %    \end{macrocode}
 % If |output| is true, we use |\includepdf| to include the PDF of the article.
 %    \begin{macrocode}
-		\bool_if:NT \l_@@_yoinprocess_output_bool { 
+		\bool_if:NT \l_@@_yoinprocess_output_bool {
 			\includepdf [ pages = - ] { ##1 / \yoin_yoinadd_prop_item:nn { ##1 } { jobname } .pdf }
 		}
 %    \end{macrocode}
@@ -965,7 +998,7 @@
 %  the first page number (possibly |1| if |alwayspageone| key is set) and the name of the this document.
 %    \begin{macrocode}
 		\iow_open:Nn \g_@@_yoinprocess_iow { ##1 .yoin1 }
-		\bool_if:NTF \l_@@_yoinprocess_alwayspageone_bool { 
+		\bool_if:NTF \l_@@_yoinprocess_alwayspageone_bool {
 			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ 1 , }
 		} {
 			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ \int_use:N \g_@@_page_int , }
