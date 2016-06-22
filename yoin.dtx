@@ -617,20 +617,37 @@
 		\group_end:
 	}
 }
-\cs_generate_variant:Nn \@@_yoinshell_runforarticle:nn { nv }
+\cs_generate_variant:Nn \@@_yoinshell_runforarticle:nn { Vv }
 %    \end{macrocode}
 % \end{macro}
 %
 %
-% \subsection{AutoRunForEach}
+% \subsection{AutoRunForEach (undocumented)}
 %
 %    \begin{macrocode}
 \tl_new:N \l_@@_yoinshell_autorunforeach_engine_tl
 \tl_set:Nn \l_@@_yoinshell_autorunforeach_engine_tl { \q_no_value }
-\tl_const:Nn \c_@@_yoinshell_autorunforeach_engine_pdflatex_tl
-	{ pdflatex ~ -output-directory ~ ./\Article/ ~ -recorder ~ ./\Article/\Jobname }
-\tl_const:Nn \c_@@_yoinshell_autorunforeach_engine_lualatex_tl
-	{ lualatex ~ --output-directory ~ ./\Article/ ~ --recorder ~ ./\Article/\Jobname }
+\tl_new:N \l_@@_yoinshell_autorunforeach_article_tl
+\cs_new_protected:Nn \yoin_yoinshell_autorunforeach_new_engine:nnn {
+	\cs_new_protected:cn { @@_yoinshell_autorunforeach_engine_preprocess_ #1 : } { #2 }
+	\tl_new:c { l_@@_yoinshell_autorunforeach_engine_ #1 _tl }
+	\tl_set:cn { l_@@_yoinshell_autorunforeach_engine_ #1 _tl } { #3 }
+}
+\cs_new_protected:Nn \yoin_yoinshell_autorunforeach_new_variable:n {
+	\tl_new:c { l_@@_yoinshell_autorunforeach_variable_ #1 _tl }
+	\keys_define:nn { yoin / autorunforeach } {
+		#1 .tl_set:c = { l_@@_yoinshell_autorunforeach_variable_ #1 _tl } ,
+	}
+}
+\yoin_yoinshell_autorunforeach_new_engine:nnn { pdflatex }
+	{ }
+	{ pdflatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" }
+\yoin_yoinshell_autorunforeach_new_engine:nnn { lualatex }
+	{ }
+	{ lualatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" }
+\yoin_yoinshell_autorunforeach_new_engine:nnn { xelatex }
+	{ }
+	{ xelatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" }
 \msg_new:nnn { yoin } { autorunforeach-noengine }
 	{ Engine ~ unspecified ~ for ~ \token_to_str:N \AutoRunForEach . ~ I'm ~ trying  ~ `pdflatex'. }
 \msg_new:nnn { yoin } { autorunforeach-unknown-engine }
@@ -646,13 +663,15 @@
 		\msg_error:nn { yoin } { autorunforeach-noengine }
 		\tl_set:Nn \l_@@_yoinshell_autorunforeach_engine_tl { pdflatex }
 	}
-	\tl_if_exist:cF { c_@@_yoinshell_autorunforeach_engine_ \l_@@_yoinshell_autorunforeach_engine_tl _tl } {
+	\tl_if_exist:cF { l_@@_yoinshell_autorunforeach_engine_ \l_@@_yoinshell_autorunforeach_engine_tl _tl } {
 		\msg_error:nnx { yoin } { autorunforeach-unknown-engine } { \l_@@_yoinshell_autorunforeach_engine_tl }
 		\tl_set:Nn \l_@@_yoinshell_autorunforeach_engine_tl { pdflatex }
 	}
 	\seq_map_inline:Nn \g_yoin_yoinadd_seq {
-		\@@_yoinshell_runforarticle:nv { ##1 }
-			{ c_@@_yoinshell_autorunforeach_engine_ \l_@@_yoinshell_autorunforeach_engine_tl _tl }
+		\tl_set:Nn \l_@@_yoinshell_autorunforeach_article_tl { ##1 }
+		\use:c { @@_yoinshell_autorunforeach_engine_preprocess_ \l_@@_yoinshell_autorunforeach_engine_tl : }
+		\@@_yoinshell_runforarticle:Vv \l_@@_yoinshell_autorunforeach_article_tl
+			{ l_@@_yoinshell_autorunforeach_engine_ \l_@@_yoinshell_autorunforeach_engine_tl _tl }
 	}
 	\group_end:
 }
@@ -671,6 +690,11 @@
 }
 %    \end{macrocode}
 % \end{macro}
+%
+% \subsection{AutoRun (undocumented)}
+%
+%    \begin{macrocode}
+%    \end{macrocode}
 %
 % \subsection{WriteMeta}
 %
