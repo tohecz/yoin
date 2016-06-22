@@ -694,6 +694,44 @@
 % \subsection{AutoRun (undocumented)}
 %
 %    \begin{macrocode}
+\tl_new:N \l_@@_yoinshell_autorun_engine_tl
+\tl_set:Nn \l_@@_yoinshell_autorun_engine_tl { \q_no_value }
+\cs_new_protected:Nn \yoin_yoinshell_autorun_new_engine:nnn {
+	\cs_new_protected:cn { @@_yoinshell_autorun_engine_preprocess_ #1 : } { #2 }
+	\tl_new:c { l_@@_yoinshell_autorun_engine_ #1 _tl }
+	\tl_set:cn { l_@@_yoinshell_autorun_engine_ #1 _tl } { #3 }
+}
+\cs_new_protected:Nn \yoin_yoinshell_autorun_new_variable:n {
+	\tl_new:c { l_@@_yoinshell_autorun_variable_ #1 _tl }
+	\keys_define:nn { yoin / autorun } {
+		#1 .tl_set:c = { l_@@_yoinshell_autorun_variable_ #1 _tl } ,
+	}
+}
+\yoin_yoinshell_autorun_new_engine:nnn { pdflatex }
+	{ }
+	{ pdflatex }
+\msg_new:nnn { yoin } { autorun-noengine }
+	{ Engine ~ unspecified ~ for ~ \token_to_str:N \AutoRun . ~ I'm ~ trying  ~ `pdflatex'. }
+\msg_new:nnn { yoin } { autorun-unknown-engine }
+	{ Engine ~ `#1' ~ unknown. ~ I'm ~ trying  ~ `pdflatex'. }
+\keys_define:nn { yoin / autorun } {
+	engine .tl_set:N = \l_@@_yoinshell_autorun_engine_tl ,
+}
+\cs_new_protected:Nn \yoin_yoinshell_autorun:n {
+	\group_begin:
+	\keys_set:nn { yoin / autorun } { #1 }
+	\quark_if_no_value:NT \l_@@_yoinshell_autorun_engine_tl {
+		\msg_error:nn { yoin } { autorun-noengine }
+		\tl_set:Nn \l_@@_yoinshell_autorun_engine_tl { pdflatex }
+	}
+	\tl_if_exist:cF { l_@@_yoinshell_autorun_engine_ \l_@@_yoinshell_autorun_engine_tl _tl } {
+		\msg_error:nnx { yoin } { autorun-unknown-engine } { \l_@@_yoinshell_autorun_engine_tl }
+		\tl_set:Nn \l_@@_yoinshell_autorun_engine_tl { pdflatex }
+	}
+	\let \Jobname \c_job_name_tl
+	\@@_yoinshell_shellescape:V 
+	\group_end:
+}
 %    \end{macrocode}
 %
 % \subsection{WriteMeta}
