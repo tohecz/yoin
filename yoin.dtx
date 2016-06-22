@@ -501,6 +501,7 @@
 \cs_new_protected:Nn \@@_yoinshell_shellescape:n {
 	\ShellEscape { #1 }
 }
+\cs_generate_variant:Nn \@@_yoinshell_shellescape:n { V }
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ \@@_yoinshell_begin:n , \@@_yoinshell_end: , {yoinshell} }
@@ -520,11 +521,13 @@
 		\DeclareDocumentCommand \RunForEach { O{} m } { }
 		\DeclareDocumentCommand \AutoRunForEach { O{} } { }
 		\DeclareDocumentCommand \Run { O{} m } { }
+		\DeclareDocumentCommand \AutoRun { O{} } { }
 		\DeclareDocumentCommand \WriteMeta { O{} } { }
 	} {
 		\DeclareDocumentCommand \RunForEach { O{} m } { \yoin_yoinshell_runforeach:nn { ##1 } { ##2 } }
 		\DeclareDocumentCommand \AutoRunForEach { O{} } { \yoin_yoinshell_autorunforeach:n { ##1 } }
 		\DeclareDocumentCommand \Run { O{} m } { \yoin_yoinshell_run:nn { ##1 } { ##2 } }
+		\DeclareDocumentCommand \AutoRun { O{} } { \yoin_yoinshell_autorun:n { ##1 } }
 		\DeclareDocumentCommand \WriteMeta { O{} } { \yoin_yoinshell_writemeta:n { ##1 } }
 		\yoin_yoinshell_writemeta:n { }
 	}
@@ -617,7 +620,7 @@
 		\group_end:
 	}
 }
-\cs_generate_variant:Nn \@@_yoinshell_runforarticle:nn { Vv }
+\cs_generate_variant:Nn \@@_yoinshell_runforarticle:nn { VV }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -627,11 +630,10 @@
 %    \begin{macrocode}
 \tl_new:N \l_@@_yoinshell_autorunforeach_engine_tl
 \tl_set:Nn \l_@@_yoinshell_autorunforeach_engine_tl { \q_no_value }
+\tl_new:N \l_@@_yoinshell_autorunforeach_command_tl
 \tl_new:N \l_@@_yoinshell_autorunforeach_article_tl
-\cs_new_protected:Nn \yoin_yoinshell_autorunforeach_new_engine:nnn {
+\cs_new_protected:Nn \yoin_yoinshell_autorunforeach_new_engine:nn {
 	\cs_new_protected:cn { @@_yoinshell_autorunforeach_engine_preprocess_ #1 : } { #2 }
-	\tl_new:c { l_@@_yoinshell_autorunforeach_engine_ #1 _tl }
-	\tl_set:cn { l_@@_yoinshell_autorunforeach_engine_ #1 _tl } { #3 }
 }
 \cs_new_protected:Nn \yoin_yoinshell_autorunforeach_new_variable:n {
 	\tl_new:c { l_@@_yoinshell_autorunforeach_variable_ #1 _tl }
@@ -639,15 +641,15 @@
 		#1 .tl_set:c = { l_@@_yoinshell_autorunforeach_variable_ #1 _tl } ,
 	}
 }
-\yoin_yoinshell_autorunforeach_new_engine:nnn { pdflatex }
-	{ }
-	{ pdflatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" }
-\yoin_yoinshell_autorunforeach_new_engine:nnn { lualatex }
-	{ }
-	{ lualatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" }
-\yoin_yoinshell_autorunforeach_new_engine:nnn { xelatex }
-	{ }
-	{ xelatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" }
+\yoin_yoinshell_autorunforeach_new_engine:nn { pdflatex }
+	{ \tl_set:Nn \l_@@_yoinshell_autorunforeach_command_tl
+		{ pdflatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" } }
+\yoin_yoinshell_autorunforeach_new_engine:nn { lualatex }
+	{ \tl_set:Nn \l_@@_yoinshell_autorunforeach_command_tl
+		{ lualatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" } }
+\yoin_yoinshell_autorunforeach_new_engine:nn { xelatex }
+	{ \tl_set:Nn \l_@@_yoinshell_autorunforeach_command_tl
+		{ xelatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" } }
 \msg_new:nnn { yoin } { autorunforeach-noengine }
 	{ Engine ~ unspecified ~ for ~ \token_to_str:N \AutoRunForEach . ~ I'm ~ trying  ~ `pdflatex'. }
 \msg_new:nnn { yoin } { autorunforeach-unknown-engine }
@@ -663,15 +665,16 @@
 		\msg_error:nn { yoin } { autorunforeach-noengine }
 		\tl_set:Nn \l_@@_yoinshell_autorunforeach_engine_tl { pdflatex }
 	}
-	\tl_if_exist:cF { l_@@_yoinshell_autorunforeach_engine_ \l_@@_yoinshell_autorunforeach_engine_tl _tl } {
+	\cs_if_exist:cF { @@_yoinshell_autorunforeach_engine_preprocess_ \l_@@_yoinshell_autorunforeach_engine_tl : } {
 		\msg_error:nnx { yoin } { autorunforeach-unknown-engine } { \l_@@_yoinshell_autorunforeach_engine_tl }
 		\tl_set:Nn \l_@@_yoinshell_autorunforeach_engine_tl { pdflatex }
 	}
 	\seq_map_inline:Nn \g_yoin_yoinadd_seq {
 		\tl_set:Nn \l_@@_yoinshell_autorunforeach_article_tl { ##1 }
 		\use:c { @@_yoinshell_autorunforeach_engine_preprocess_ \l_@@_yoinshell_autorunforeach_engine_tl : }
-		\@@_yoinshell_runforarticle:Vv \l_@@_yoinshell_autorunforeach_article_tl
-			{ l_@@_yoinshell_autorunforeach_engine_ \l_@@_yoinshell_autorunforeach_engine_tl _tl }
+		\@@_yoinshell_runforarticle:VV
+			\l_@@_yoinshell_autorunforeach_article_tl
+			\l_@@_yoinshell_autorunforeach_command_tl
 	}
 	\group_end:
 }
@@ -696,20 +699,26 @@
 %    \begin{macrocode}
 \tl_new:N \l_@@_yoinshell_autorun_engine_tl
 \tl_set:Nn \l_@@_yoinshell_autorun_engine_tl { \q_no_value }
-\cs_new_protected:Nn \yoin_yoinshell_autorun_new_engine:nnn {
+\tl_new:N \l_@@_yoinshell_autorun_command_tl
+\cs_new_protected:Nn \yoin_yoinshell_autorun_new_engine:nn {
 	\cs_new_protected:cn { @@_yoinshell_autorun_engine_preprocess_ #1 : } { #2 }
-	\tl_new:c { l_@@_yoinshell_autorun_engine_ #1 _tl }
-	\tl_set:cn { l_@@_yoinshell_autorun_engine_ #1 _tl } { #3 }
 }
 \cs_new_protected:Nn \yoin_yoinshell_autorun_new_variable:n {
 	\tl_new:c { l_@@_yoinshell_autorun_variable_ #1 _tl }
 	\keys_define:nn { yoin / autorun } {
-		#1 .tl_set:c = { l_@@_yoinshell_autorun_variable_ #1 _tl } ,
+		#1 .tl_set:c = l_@@_yoinshell_autorun_variable_ #1 _tl ,
 	}
 }
-\yoin_yoinshell_autorun_new_engine:nnn { pdflatex }
-	{ }
-	{ pdflatex }
+\yoin_yoinshell_autorun_new_engine:nn { pdflatex } {
+	\tl_clear:N \l_@@_yoinshell_autorun_command_tl
+	\tl_put_right:Nn \l_@@_yoinshell_autorun_command_tl
+		{ pdflatex ~ -recorder ~ -jobname ~ "\Jobname }
+	\tl_put_right:NV \l_@@_yoinshell_autorun_command_tl
+		\l_@@_yoinshell_autorun_variable_suffix_tl
+	\tl_put_right:Nn \l_@@_yoinshell_autorun_command_tl
+		{ " ~ "\noexpand\PassOptionsToPackage{subprocess, ~ jobname=\Jobname}{yoin}\noexpand\input{\Jobname}" }
+}
+\yoin_yoinshell_autorun_new_variable:n { suffix }
 \msg_new:nnn { yoin } { autorun-noengine }
 	{ Engine ~ unspecified ~ for ~ \token_to_str:N \AutoRun . ~ I'm ~ trying  ~ `pdflatex'. }
 \msg_new:nnn { yoin } { autorun-unknown-engine }
@@ -724,12 +733,13 @@
 		\msg_error:nn { yoin } { autorun-noengine }
 		\tl_set:Nn \l_@@_yoinshell_autorun_engine_tl { pdflatex }
 	}
-	\tl_if_exist:cF { l_@@_yoinshell_autorun_engine_ \l_@@_yoinshell_autorun_engine_tl _tl } {
+	\cs_if_exist:cF { @@_yoinshell_autorun_engine_preprocess_ \l_@@_yoinshell_autorun_engine_tl : } {
 		\msg_error:nnx { yoin } { autorun-unknown-engine } { \l_@@_yoinshell_autorun_engine_tl }
 		\tl_set:Nn \l_@@_yoinshell_autorun_engine_tl { pdflatex }
 	}
+	\use:c { @@_yoinshell_autorun_engine_preprocess_ \l_@@_yoinshell_autorun_engine_tl : }
 	\let \Jobname \c_job_name_tl
-	\@@_yoinshell_shellescape:V 
+	\@@_yoinshell_shellescape:V \l_@@_yoinshell_autorun_command_tl
 	\group_end:
 }
 %    \end{macrocode}
