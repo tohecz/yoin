@@ -55,7 +55,7 @@
 \seq_new:N \g_yoin_onlyflags_seq
 \seq_new:N \g_yoin_onlytags_seq
 \tl_new:N \g_yoin_jobname_tl
-\tl_gset_eq:NN \g_yoin_jobname_tl \c_job_name_tl
+\tl_gset_eq:NN \g_yoin_jobname_tl \c_sys_jobname_str
 \msg_new:nnnn { yoin } { unknown-flag }
    { The ~ flag ~ `#1' ~ is ~ unknown ~ to ~ `yoin'. }
    { You ~ either ~ misspelled ~ it ~ or ~forgot ~ to ~ declare ~ it. }
@@ -283,6 +283,9 @@
 \tl_new:N \l__yoin_yoinshell_autorunforeach_command_tl
 \tl_new:N \l__yoin_yoinshell_autorunforeach_article_tl
 \cs_new_protected:Nn \yoin_yoinshell_autorunforeach_new_engine:nn {
+   \cs_if_exist:cT { __yoin_yoinshell_autorunforeach_engine_preprocess_ #1 : } {
+      \msg_warning:nnn { yoin } { autorunforeach-duplicate-engine } { #1 }
+   }
    \cs_new_protected:cn { __yoin_yoinshell_autorunforeach_engine_preprocess_ #1 : } { #2 }
 }
 \cs_new_protected:Nn \yoin_yoinshell_autorunforeach_new_variable:n {
@@ -291,17 +294,31 @@
       #1 .tl_set:c = { l__yoin_yoinshell_autorunforeach_variable_ #1 _tl } ,
    }
 }
+\yoin_yoinshell_autorunforeach_new_engine:nn { latex }
+   { \tl_set:Nn \l__yoin_yoinshell_autorunforeach_command_tl
+      { cd ~ "./\Article" ~ && ~ latex ~ -recorder ~ "./\Jobname" } }
+\yoin_yoinshell_autorunforeach_new_engine:nn { dvips }
+   { \tl_set:Nn \l__yoin_yoinshell_autorunforeach_command_tl
+      { cd ~ "./\Article" ~ && ~ dvips ~ "./\Jobname.dvi" } }
+\yoin_yoinshell_autorunforeach_new_engine:nn { ps2pdf }
+   { \tl_set:Nn \l__yoin_yoinshell_autorunforeach_command_tl
+      { cd ~ "./\Article" ~ && ~ ps2pdf ~ "./\Jobname.ps" } }
 \yoin_yoinshell_autorunforeach_new_engine:nn { pdflatex }
    { \tl_set:Nn \l__yoin_yoinshell_autorunforeach_command_tl
-      { pdflatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" } }
+      { cd ~ "./\Article" ~ && ~ pdflatex ~ -recorder ~ "./\Jobname" } }
 \yoin_yoinshell_autorunforeach_new_engine:nn { lualatex }
    { \tl_set:Nn \l__yoin_yoinshell_autorunforeach_command_tl
-      { lualatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" } }
+      { cd ~ "./\Article" ~ && ~ lualatex ~ -recorder ~ "./\Jobname" } }
 \yoin_yoinshell_autorunforeach_new_engine:nn { xelatex }
    { \tl_set:Nn \l__yoin_yoinshell_autorunforeach_command_tl
-      { xelatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" } }
+      { cd ~ "./\Article" ~ && ~ xelatex ~ -recorder ~ "./\Jobname" } }
+\yoin_yoinshell_autorunforeach_new_engine:nn { arara }
+   { \tl_set:Nn \l__yoin_yoinshell_autorunforeach_command_tl
+      { cd ~ "./\Article" ~ && ~ arara ~ "./\Jobname.tex" } }
 \msg_new:nnn { yoin } { autorunforeach-noengine }
    { Engine ~ unspecified ~ for ~ \token_to_str:N \AutoRunForEach . ~ I'm ~ trying  ~ `pdflatex'. }
+\msg_new:nnn { yoin } { autorunforeach-duplicate-engine }
+   { Engine ~ `#1' ~ defined ~ multiple ~ times. ~ Overwriting ~ the ~ first ~ definition. }
 \msg_new:nnn { yoin } { autorunforeach-unknown-engine }
    { Engine ~ `#1' ~ unknown. ~ I'm ~ trying  ~ `pdflatex'. }
 \keys_define:nn { yoin / autorunforeach } {
@@ -331,7 +348,7 @@
 \cs_new_protected:Nn \yoin_yoinshell_run:nn {
    \group_begin:
    \keys_set:nn { yoin / run } { #1 }
-   \let \Jobname \c_job_name_tl
+   \let \Jobname \c_sys_jobname_str
    \__yoin_yoinshell_shellescape:n { #2 }
    \group_end:
 }
@@ -376,7 +393,7 @@
       \tl_set:Nn \l__yoin_yoinshell_autorun_engine_tl { pdflatex }
    }
    \use:c { __yoin_yoinshell_autorun_engine_preprocess_ \l__yoin_yoinshell_autorun_engine_tl : }
-   \let \Jobname \c_job_name_tl
+   \let \Jobname \c_sys_jobname_str
    \__yoin_yoinshell_shellescape:V \l__yoin_yoinshell_autorun_command_tl
    \group_end:
 }
@@ -386,7 +403,7 @@
    \yoin_yoinmeta:n { #1 }
    \iow_open:Nn \g__yoin_yoinshell_iow { \g_yoin_jobname_tl .yoin }
    \prop_map_inline:Nn \l__yoin_yoinmeta_prop {
-      \iow_now:Nn \g__yoin_yoinshell_iow { meta-##1 ~ = ~ ##2, }
+      \iow_now:Nn \g__yoin_yoinshell_iow { meta-##1 ~ = ~ { ##2 } , }
    }
    \iow_close:N \g__yoin_yoinshell_iow
    \group_end:
@@ -448,7 +465,7 @@
 \seq_new:N \l__yoin_article_tmpa_seq
 
 \cs_new_protected:Nn \__yoin_article_write_keyval:nn {
-   \iow_now:Nn \g__yoin_article_dotyoin_iow { #1 ~ = ~ #2 , }
+   \iow_now:Nn \g__yoin_article_dotyoin_iow { #1 ~ = ~ { #2 } , }
 }
 \cs_generate_variant:Nn \__yoin_article_write_keyval:nn { nx, nV }
 
@@ -457,7 +474,7 @@
 }
 
 \cs_new_protected:Nn \yoin_article_write: {
-   \__yoin_article_write_keyval:nV { jobname } \c_job_name_tl
+   \__yoin_article_write_keyval:nV { jobname } \c_sys_jobname_str
    \__yoin_article_write_keyval:nx { totpages } { \ztotpages }
    \__yoin_article_write_keyval:nV { currdir } \l_yoin_article_currdir_tl
    \__yoin_article_write_keyval:nx { firstpage } { \int_use:N \l_yoin_article_firstpage_int }
@@ -519,10 +536,10 @@
 }
 
 \tl_new:N \l_yoin_article_currdir_tl
-\cs_generate_variant:Nn \regex_extract_once:nnN { nV }
+\cs_generate_variant:Nn \regex_extract_all:nnN { nV }
 \cs_new_protected:Nn \yoin_article_getcurrdir:N {
-   \tl_set:Nx \l__yoin_article_tmpa_tl { \currfileabsdir }
-   \regex_extract_once:nVN { /([^/]+)/\Z } \l__yoin_article_tmpa_tl \l__yoin_article_tmpa_seq
+   \tl_set:Nx \l__yoin_article_tmpa_tl { \currfileabsdir / }
+   \regex_extract_all:nVN { /([^/][^/]+|[^/.]) } \l__yoin_article_tmpa_tl \l__yoin_article_tmpa_seq
    \seq_get_right:NN \l__yoin_article_tmpa_seq #1
 }
 
@@ -584,11 +601,11 @@
       }
       \iow_open:Nn \g__yoin_yoinprocess_iow { ##1 .yoin1 }
       \bool_if:NTF \l__yoin_yoinprocess_alwayspageone_bool {
-         \iow_now:Nx \g__yoin_yoinprocess_iow { firstpage ~ = ~ 1 , }
+         \iow_now:Nx \g__yoin_yoinprocess_iow { firstpage ~ = ~ { 1 } , }
       } {
-         \iow_now:Nx \g__yoin_yoinprocess_iow { firstpage ~ = ~ \int_use:N \g__yoin_page_int , }
+         \iow_now:Nx \g__yoin_yoinprocess_iow { firstpage ~ = ~ { \int_use:N \g__yoin_page_int } , }
       }
-      \iow_now:Nx \g__yoin_yoinprocess_iow { parent ~ = ~ \jobname , }
+      \iow_now:Nx \g__yoin_yoinprocess_iow { parent ~ = ~ { \jobname } , }
       \iow_close:N \g__yoin_yoinprocess_iow
       \int_gadd:Nn \g__yoin_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
    }
