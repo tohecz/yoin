@@ -771,7 +771,7 @@
 	\yoin_yoinmeta:n { #1 }
 	\iow_open:Nn \g_@@_yoinshell_iow { \g_yoin_jobname_tl .yoin }
 	\prop_map_inline:Nn \l_@@_yoinmeta_prop {
-		\iow_now:Nn \g_@@_yoinshell_iow { meta-##1 ~ = ~ ##2, }
+		\iow_now:Nn \g_@@_yoinshell_iow { meta-##1 ~ = ~ { ##2 } , }
 	}
 	\iow_close:N \g_@@_yoinshell_iow
 	\group_end:
@@ -890,7 +890,7 @@
 \seq_new:N \l_@@_article_tmpa_seq
 
 \cs_new_protected:Nn \@@_article_write_keyval:nn {
-	\iow_now:Nn \g_@@_article_dotyoin_iow { #1 ~ = ~ #2 , }
+	\iow_now:Nn \g_@@_article_dotyoin_iow { #1 ~ = ~ { #2 } , }
 }
 \cs_generate_variant:Nn \@@_article_write_keyval:nn { nx, nV }
 
@@ -1095,11 +1095,11 @@
 %    \begin{macrocode}
 		\iow_open:Nn \g_@@_yoinprocess_iow { ##1 .yoin1 }
 		\bool_if:NTF \l_@@_yoinprocess_alwayspageone_bool {
-			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ 1 , }
+			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ { 1 } , }
 		} {
-			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ \int_use:N \g_@@_page_int , }
+			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ { \int_use:N \g_@@_page_int } , }
 		}
-		\iow_now:Nx \g_@@_yoinprocess_iow { parent ~ = ~ \jobname , }
+		\iow_now:Nx \g_@@_yoinprocess_iow { parent ~ = ~ { \jobname } , }
 		\iow_close:N \g_@@_yoinprocess_iow
 %    \end{macrocode}
 % Update our internal page counter.
