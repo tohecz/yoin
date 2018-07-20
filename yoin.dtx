@@ -179,7 +179,7 @@
 % We can modify what the package considers as the value of |\jobname|, here's a token list for that:
 %    \begin{macrocode}
 \tl_new:N \g_yoin_jobname_tl
-\tl_gset_eq:NN \g_yoin_jobname_tl \c_job_name_tl
+\tl_gset_eq:NN \g_yoin_jobname_tl \c_sys_jobname_str
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{ msg: unknown-flag , msg: unknown-tag }
@@ -687,7 +687,7 @@
 \cs_new_protected:Nn \yoin_yoinshell_run:nn {
 	\group_begin:
 	\keys_set:nn { yoin / run } { #1 }
-	\let \Jobname \c_job_name_tl
+	\let \Jobname \c_sys_jobname_str
 	\@@_yoinshell_shellescape:n { #2 }
 	\group_end:
 }
@@ -738,7 +738,7 @@
 		\tl_set:Nn \l_@@_yoinshell_autorun_engine_tl { pdflatex }
 	}
 	\use:c { @@_yoinshell_autorun_engine_preprocess_ \l_@@_yoinshell_autorun_engine_tl : }
-	\let \Jobname \c_job_name_tl
+	\let \Jobname \c_sys_jobname_str
 	\@@_yoinshell_shellescape:V \l_@@_yoinshell_autorun_command_tl
 	\group_end:
 }
@@ -882,7 +882,7 @@
 }
 
 \cs_new_protected:Nn \yoin_article_write: {
-	\@@_article_write_keyval:nV { jobname } \c_job_name_tl
+	\@@_article_write_keyval:nV { jobname } \c_sys_jobname_str
 	\@@_article_write_keyval:nx { totpages } { \ztotpages }
 	\@@_article_write_keyval:nV { currdir } \l_yoin_article_currdir_tl
 	\@@_article_write_keyval:nx { firstpage } { \int_use:N \l_yoin_article_firstpage_int }
