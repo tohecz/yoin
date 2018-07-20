@@ -633,6 +633,9 @@
 \tl_new:N \l_@@_yoinshell_autorunforeach_command_tl
 \tl_new:N \l_@@_yoinshell_autorunforeach_article_tl
 \cs_new_protected:Nn \yoin_yoinshell_autorunforeach_new_engine:nn {
+	\cs_if_exist:cT { @@_yoinshell_autorunforeach_engine_preprocess_ #1 : } {
+		\msg_warning:nnn { yoin } { autorunforeach-duplicate-engine } { #1 }
+	}
 	\cs_new_protected:cn { @@_yoinshell_autorunforeach_engine_preprocess_ #1 : } { #2 }
 }
 \cs_new_protected:Nn \yoin_yoinshell_autorunforeach_new_variable:n {
@@ -641,17 +644,31 @@
 		#1 .tl_set:c = { l_@@_yoinshell_autorunforeach_variable_ #1 _tl } ,
 	}
 }
+\yoin_yoinshell_autorunforeach_new_engine:nn { latex }
+	{ \tl_set:Nn \l_@@_yoinshell_autorunforeach_command_tl
+		{ cd ~ "./\Article" ~ && ~ latex ~ -recorder ~ "./\Jobname" } }
+\yoin_yoinshell_autorunforeach_new_engine:nn { dvips }
+	{ \tl_set:Nn \l_@@_yoinshell_autorunforeach_command_tl
+		{ cd ~ "./\Article" ~ && ~ dvips ~ "./\Jobname.dvi" } }
+\yoin_yoinshell_autorunforeach_new_engine:nn { ps2pdf }
+	{ \tl_set:Nn \l_@@_yoinshell_autorunforeach_command_tl
+		{ cd ~ "./\Article" ~ && ~ ps2pdf ~ "./\Jobname.ps" } }
 \yoin_yoinshell_autorunforeach_new_engine:nn { pdflatex }
 	{ \tl_set:Nn \l_@@_yoinshell_autorunforeach_command_tl
-		{ pdflatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" } }
+		{ cd ~ "./\Article" ~ && ~ pdflatex ~ -recorder ~ "./\Jobname" } }
 \yoin_yoinshell_autorunforeach_new_engine:nn { lualatex }
 	{ \tl_set:Nn \l_@@_yoinshell_autorunforeach_command_tl
-		{ lualatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" } }
+		{ cd ~ "./\Article" ~ && ~ lualatex ~ -recorder ~ "./\Jobname" } }
 \yoin_yoinshell_autorunforeach_new_engine:nn { xelatex }
 	{ \tl_set:Nn \l_@@_yoinshell_autorunforeach_command_tl
-		{ xelatex ~ -output-directory ~ "./\Article/" ~ -recorder ~ "./\Article/\Jobname" } }
+		{ cd ~ "./\Article" ~ && ~ xelatex ~ -recorder ~ "./\Jobname" } }
+\yoin_yoinshell_autorunforeach_new_engine:nn { arara }
+	{ \tl_set:Nn \l_@@_yoinshell_autorunforeach_command_tl
+		{ cd ~ "./\Article" ~ && ~ arara ~ "./\Jobname.tex" } }
 \msg_new:nnn { yoin } { autorunforeach-noengine }
 	{ Engine ~ unspecified ~ for ~ \token_to_str:N \AutoRunForEach . ~ I'm ~ trying  ~ `pdflatex'. }
+\msg_new:nnn { yoin } { autorunforeach-duplicate-engine }
+	{ Engine ~ `#1' ~ defined ~ multiple ~ times. ~ Overwriting ~ the ~ first ~ definition. }
 \msg_new:nnn { yoin } { autorunforeach-unknown-engine }
 	{ Engine ~ `#1' ~ unknown. ~ I'm ~ trying  ~ `pdflatex'. }
 \keys_define:nn { yoin / autorunforeach } {
