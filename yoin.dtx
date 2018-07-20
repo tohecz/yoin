@@ -961,11 +961,11 @@
 }
 
 \tl_new:N \l_yoin_article_currdir_tl
-\cs_generate_variant:Nn \regex_extract_once:nnN { nV }
+\cs_generate_variant:Nn \regex_extract_all:nnN { nV }
 \cs_new_protected:Nn \yoin_article_getcurrdir:N {
-	\tl_set:Nx \l_@@_article_tmpa_tl { \currfileabsdir }
-	\regex_extract_once:nVN { /([^/]+)/\Z } \l_@@_article_tmpa_tl \l_@@_article_tmpa_seq
-	\seq_get_right:NN \l_@@_article_tmpa_seq #1
+   \tl_set:Nx \l__yoin_article_tmpa_tl { \currfileabsdir / }
+   \regex_extract_all:nVN { /([^/][^/]+|[^/.]) } \l__yoin_article_tmpa_tl \l__yoin_article_tmpa_seq
+   \seq_get_right:NN \l__yoin_article_tmpa_seq #1
 }
 
 \iow_new:N \g_@@_article_dotyoin_iow
