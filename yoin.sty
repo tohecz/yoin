@@ -348,7 +348,7 @@
 \cs_new_protected:Nn \yoin_yoinshell_run:nn {
    \group_begin:
    \keys_set:nn { yoin / run } { #1 }
-   \let \Jobname \c_sys_jobname_str
+   \let \Jobname \g_yoin_jobname_tl
    \__yoin_yoinshell_shellescape:n { #2 }
    \group_end:
 }
@@ -393,7 +393,7 @@
       \tl_set:Nn \l__yoin_yoinshell_autorun_engine_tl { pdflatex }
    }
    \use:c { __yoin_yoinshell_autorun_engine_preprocess_ \l__yoin_yoinshell_autorun_engine_tl : }
-   \let \Jobname \c_sys_jobname_str
+   \let \Jobname \g_yoin_jobname_tl
    \__yoin_yoinshell_shellescape:V \l__yoin_yoinshell_autorun_command_tl
    \group_end:
 }
@@ -474,7 +474,7 @@
 }
 
 \cs_new_protected:Nn \yoin_article_write: {
-   \__yoin_article_write_keyval:nV { jobname } \c_sys_jobname_str
+   \__yoin_article_write_keyval:nV { jobname } \g_yoin_jobname_tl
    \__yoin_article_write_keyval:nx { totpages } { \ztotpages }
    \__yoin_article_write_keyval:nV { currdir } \l_yoin_article_currdir_tl
    \__yoin_article_write_keyval:nx { firstpage } { \int_use:N \l_yoin_article_firstpage_int }
@@ -605,7 +605,7 @@
       } {
          \iow_now:Nx \g__yoin_yoinprocess_iow { firstpage ~ = ~ { \int_use:N \g__yoin_page_int } , }
       }
-      \iow_now:Nx \g__yoin_yoinprocess_iow { parent ~ = ~ { \jobname } , }
+      \iow_now:Nx \g__yoin_yoinprocess_iow { parent ~ = ~ { \g_yoin_jobname_tl } , }
       \iow_close:N \g__yoin_yoinprocess_iow
       \int_gadd:Nn \g__yoin_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
    }

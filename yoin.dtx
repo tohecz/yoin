@@ -704,7 +704,7 @@
 \cs_new_protected:Nn \yoin_yoinshell_run:nn {
 	\group_begin:
 	\keys_set:nn { yoin / run } { #1 }
-	\let \Jobname \c_sys_jobname_str
+	\let \Jobname \g_yoin_jobname_tl
 	\@@_yoinshell_shellescape:n { #2 }
 	\group_end:
 }
@@ -755,7 +755,7 @@
 		\tl_set:Nn \l_@@_yoinshell_autorun_engine_tl { pdflatex }
 	}
 	\use:c { @@_yoinshell_autorun_engine_preprocess_ \l_@@_yoinshell_autorun_engine_tl : }
-	\let \Jobname \c_sys_jobname_str
+	\let \Jobname \g_yoin_jobname_tl
 	\@@_yoinshell_shellescape:V \l_@@_yoinshell_autorun_command_tl
 	\group_end:
 }
@@ -899,7 +899,7 @@
 }
 
 \cs_new_protected:Nn \yoin_article_write: {
-	\@@_article_write_keyval:nV { jobname } \c_sys_jobname_str
+	\@@_article_write_keyval:nV { jobname } \g_yoin_jobname_tl
 	\@@_article_write_keyval:nx { totpages } { \ztotpages }
 	\@@_article_write_keyval:nV { currdir } \l_yoin_article_currdir_tl
 	\@@_article_write_keyval:nx { firstpage } { \int_use:N \l_yoin_article_firstpage_int }
@@ -1099,7 +1099,7 @@
 		} {
 			\iow_now:Nx \g_@@_yoinprocess_iow { firstpage ~ = ~ { \int_use:N \g_@@_page_int } , }
 		}
-		\iow_now:Nx \g_@@_yoinprocess_iow { parent ~ = ~ { \jobname } , }
+		\iow_now:Nx \g_@@_yoinprocess_iow { parent ~ = ~ { \g_yoin_jobname_tl } , }
 		\iow_close:N \g_@@_yoinprocess_iow
 %    \end{macrocode}
 % Update our internal page counter.
