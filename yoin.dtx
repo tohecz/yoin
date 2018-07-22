@@ -275,15 +275,6 @@
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{ \ProcessKeysPackageOptions }
-% Process key options given to the package.
-% We \emph{do not want to process any options given to the class}.
-% Whence |\ProcessKeysPackageOptions| and not |\ProcessKeysOptions|.
-%    \begin{macrocode}
-\ProcessKeysPackageOptions { yoin / general }
-%    \end{macrocode}
-% \end{macro}
-%
 % \begin{macro}{ \yoin_setup:n , \yoinSetup }
 % Allow keys to be set later. We define both a \LaTeX3 interface and an xparse UI wrapper.
 %    \begin{macrocode}
@@ -992,15 +983,11 @@
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{ \yoin_yoinprocess:n }
-% The key macro of the package, to some sense. It takes care of the page numbering of the articles,
+% \begin{macro}{ \yoin_yoinprocess: }
+% The cornerstone macro of the package, to some sense. It takes care of the page numbering of the articles,
 % proper placement of stuff in twoside environment, etc.
 %    \begin{macrocode}
-\cs_new_protected:Nn \yoin_yoinprocess:n {
-%    \end{macrocode}
-% Set the appropriate keys (this may be changed later and moved to |yoin/general| keys.
-%    \begin{macrocode}
-	\keys_set:nn { yoin / yoinprocess } { #1 }
+\cs_new_protected:Nn \yoin_yoinprocess: {
 %    \end{macrocode}
 % Finish the current page if it's started.
 %    \begin{macrocode}
@@ -1113,7 +1100,7 @@
 % \begin{macro}{ \yoinProcess }
 % Public wrapper around the \LaTeX3 version.
 %    \begin{macrocode}
-\DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
+\DeclareDocumentCommand \yoinProcess { } { \yoin_yoinprocess: }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -1161,12 +1148,14 @@
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{ yoin / yoinprocess }
+% \begin{macro}{ yoin / general }
 % Keys for |yoinprocess|: several boolean keys (including |openany| as the negation of |openright|),
 %  and |setpagenumber|, taking as a value either a number or |false| (if a number is input, it is stored in a counter
 %  with the appropriate boolean set |true|).
+% We actually define these keys as general keys and they are set up either when loading the package of using
+%  |\yoinSetup|, they are defined here because they basically only interact with |\yoinProcess|.
 %    \begin{macrocode}
-\keys_define:nn { yoin / yoinprocess } {
+\keys_define:nn { yoin / general } {
 %    \end{macrocode}
 %    \begin{macrocode}
 	cleardoublepage .bool_set:N = \l_@@_yoinprocess_cleardoublepage_bool ,
@@ -1198,6 +1187,19 @@
 %    \end{macrocode}
 %    \begin{macrocode}
 }
+%    \end{macrocode}
+% \end{macro}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Process keys}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \begin{macro}{ \ProcessKeysPackageOptions }
+% Process key options given to the package.
+% We \emph{do not want to process any options given to the class}.
+% Whence |\ProcessKeysPackageOptions| and not |\ProcessKeysOptions|.
+%    \begin{macrocode}
+\ProcessKeysPackageOptions { yoin / general }
 %    \end{macrocode}
 % \end{macro}
 %

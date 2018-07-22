@@ -94,7 +94,6 @@
    jobname .tl_gset:N = \g_yoin_jobname_tl,
    meta .code:n = \yoin_yoinmeta:n { #1 },
 }
-\ProcessKeysPackageOptions { yoin / general }
 \cs_new_protected:Nn \yoin_setup:n {
    \keys_set:nn { yoin / general } { #1 }
 }
@@ -557,8 +556,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \msg_new:nnn { yoin } { forceopenanyright }
    { The ~ article ~ '#1' ~ has ~ both ~ 'forceopenany' ~ and ~ 'forceopenright' ~ keys ~ set. }
-\cs_new_protected:Nn \yoin_yoinprocess:n {
-   \keys_set:nn { yoin / yoinprocess } { #1 }
+\cs_new_protected:Nn \yoin_yoinprocess: {
    \clearpage
    \bool_if:NTF \l__yoin_yoinprocess_cleardoublepage_bool {
       \bool_if:NTF \l__yoin_yoinprocess_setpagenumber_bool {
@@ -610,7 +608,7 @@
       \int_gadd:Nn \g__yoin_page_int { \yoin_yoinadd_prop_item:nn { ##1 } { totpages } }
    }
 }
-\DeclareDocumentCommand \yoinProcess { O{} } { \yoin_yoinprocess:n { #1 } }
+\DeclareDocumentCommand \yoinProcess { } { \yoin_yoinprocess: }
 \int_new:N \g__yoin_page_int
 \iow_new:N \g__yoin_yoinprocess_iow
 \cs_new_protected:Nn \__yoin_yoinprocess_cleardoublepage: {
@@ -629,7 +627,7 @@
 \bool_new:N \l__yoin_yoinprocess_alwayspageone_bool
 \bool_new:N \l__yoin_yoinprocess_setpagenumber_bool
 \int_new:N \l__yoin_yoinprocess_setpagenumber_int
-\keys_define:nn { yoin / yoinprocess } {
+\keys_define:nn { yoin / general } {
    cleardoublepage .bool_set:N = \l__yoin_yoinprocess_cleardoublepage_bool ,
    cleardoublepage .initial:n = { false },
    output .bool_set:N = \l__yoin_yoinprocess_output_bool ,
@@ -649,6 +647,9 @@
       ,
    setpagenumber .initial:n = { false },
 }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ProcessKeysPackageOptions { yoin / general }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cs_new:Nn \yoin_blabla: {
