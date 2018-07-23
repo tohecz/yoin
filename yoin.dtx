@@ -71,6 +71,8 @@
 %   \PrintIndex
 % }
 %
+%
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{Package header}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,6 +101,8 @@
 %    \begin{macrocode}
 \ProvidesExplPackage{yoin}{2016/02/28}{v0.0.1}{Joining articles into issues}
 %    \end{macrocode}
+%
+%
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{General macros}
@@ -149,6 +153,8 @@
 	{ Key ~ '#1' ~ accepts ~ boolean ~ values ~ only.}
 %    \end{macrocode}
 % \end{macro}
+%
+%
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{Key--value interface for the package setup}
@@ -289,6 +295,8 @@
 %    \end{macrocode}
 % \end{macro}
 %
+%
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{yoinMeta macro --- adding issue's metadata}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -310,6 +318,8 @@
 }
 %    \end{macrocode}
 % \end{macro}
+%
+%
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{yoinAdd macro --- adding articles to the issue}
@@ -442,6 +452,8 @@
 }
 %    \end{macrocode}
 % \end{macro}
+%
+%
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{Environment yoinshell}
@@ -1090,6 +1102,8 @@
 %    \end{macrocode}
 % \end{macro}
 %
+%
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{Process keys}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1153,7 +1167,7 @@
 		}
 		\yoin_article_read_put:nn { parent } { #1 }
 		,
-	
+
 	unknown .code:n =
 		\yoin_article_read_put:Vn \l_keys_key_tl { #1 }
 		,
