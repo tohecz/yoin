@@ -888,6 +888,7 @@
 \cs_new_protected:Nn \yoin_article_write_meta:nn {
 	\@@_article_write_keyval:nn { article-#1 } { #2 }
 }
+\cs_generate_variant:Nn \yoin_article_write_meta:nn { nx, nV }
 
 \cs_new_protected:Nn \yoin_article_write: {
 	\@@_article_write_keyval:nV { jobname } \g_yoin_jobname_tl
