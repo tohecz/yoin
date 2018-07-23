@@ -872,107 +872,6 @@
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{Article setting stuff (undocumented)}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Information to be stored in an auxiliary file.
-%    \begin{macrocode}
-\tl_new:N \l_@@_article_tmpa_tl
-\seq_new:N \l_@@_article_tmpa_seq
-
-\cs_new_protected:Nn \@@_article_write_keyval:nn {
-	\iow_now:Nn \g_@@_article_dotyoin_iow { #1 ~ = ~ { #2 } , }
-}
-\cs_generate_variant:Nn \@@_article_write_keyval:nn { nx, nV }
-
-\cs_new_protected:Nn \yoin_article_write_meta:nn {
-	\@@_article_write_keyval:nn { article-#1 } { #2 }
-}
-\cs_generate_variant:Nn \yoin_article_write_meta:nn { nx, nV }
-
-\cs_new_protected:Nn \yoin_article_write: {
-	\@@_article_write_keyval:nV { jobname } \g_yoin_jobname_tl
-	\@@_article_write_keyval:nx { totpages } { \ztotpages }
-	\@@_article_write_keyval:nV { currdir } \l_yoin_article_currdir_tl
-	\@@_article_write_keyval:nx { firstpage } { \int_use:N \l_yoin_article_firstpage_int }
-}
-
-\prop_new:N \l_@@_article_read_prop
-
-\cs_new_protected:Nn \yoin_article_read_put:nn {
-	\prop_put:Nnn \l_@@_article_read_prop { #1 } { #2 }
-}
-\cs_generate_variant:Nn \yoin_article_read_put:nn { V }
-
-\int_new:N \l_yoin_article_firstpage_int
-\int_set:Nn \l_yoin_article_firstpage_int { 1 }
-
-\keys_define:nn { yoin / toarticle } {
-	firstpage .code:n =
-		\int_set:Nn \l_yoin_article_firstpage_int { #1 }
-		\yoin_article_read_put:nn { firstpage } { #1 }
-		,
-
-	parent .code:n =
-		\file_if_exist:nT { ../ #1 .yoin } {
-			\yoin_keys_set_from_file:nn { yoin / toarticle } { ../ #1 .yoin }
-		}
-		\yoin_article_read_put:nn { parent } { #1 }
-		,
-	
-	unknown .code:n =
-		\yoin_article_read_put:Vn \l_keys_key_tl { #1 }
-		,
-}
-
-\bool_new:N \g_@@_article_read_bool
-
-\cs_new_protected:Nn \yoin_article_read: {
-	\bool_if:NF \g_@@_article_read_bool {
-		\file_if_exist:nT { ../ \l_yoin_article_currdir_tl .yoin1 } {
-			\yoin_keys_set_from_file:nn { yoin / toarticle } { ../ \l_yoin_article_currdir_tl .yoin1 }
-		}
-	}
-	\bool_gset_true:N \g_@@_article_read_bool
-}
-
-\cs_new:Nn \yoin_article_read_meta:n {
-	\prop_item:Nn \l_@@_article_read_prop { meta-#1 }
-}
-
-\cs_new_protected:Nn \yoin_article_read_meta_gset_tl_default:Nnn {
-	\prop_get:NnNTF \l_@@_article_read_prop { meta-#2 } \l_@@_article_tmpa_tl {
-		\tl_gset_eq:NN #1 \l_@@_article_tmpa_tl
-	} {
-		\tl_gset:Nn #1 { #3 }
-	}
-}
-
-\NewDocumentCommand \yoinArticleMeta { m } {
-	\yoin_article_read_meta:n { #1 }
-}
-
-\tl_new:N \l_yoin_article_currdir_tl
-\cs_generate_variant:Nn \regex_extract_all:nnN { nV }
-\cs_new_protected:Nn \yoin_article_getcurrdir:N {
-   \tl_set:Nx \l__yoin_article_tmpa_tl { \currfileabsdir / }
-   \regex_extract_all:nVN { /([^/][^/]+|[^/.]) } \l__yoin_article_tmpa_tl \l__yoin_article_tmpa_seq
-   \seq_get_right:NN \l__yoin_article_tmpa_seq #1
-}
-
-\iow_new:N \g_@@_article_dotyoin_iow
-\bool_if:NT \g_yoin_article_bool {
-	\yoin_article_getcurrdir:N \l_yoin_article_currdir_tl
-	\iow_open:Nn \g_@@_article_dotyoin_iow { \l_yoin_article_currdir_tl .yoin }
-	\yoin_article_read:
-	\AtBeginDocument {
-		\setcounter { page } { \l_yoin_article_firstpage_int }
-		\yoin_article_write:
-	}
-}
-%    \end{macrocode}
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{yoinProcess}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -1203,6 +1102,109 @@
 \ProcessKeysPackageOptions { yoin / general }
 %    \end{macrocode}
 % \end{macro}
+%
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Article setting stuff (undocumented)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Information to be stored in an auxiliary file.
+%    \begin{macrocode}
+\tl_new:N \l_@@_article_tmpa_tl
+\seq_new:N \l_@@_article_tmpa_seq
+
+\cs_new_protected:Nn \@@_article_write_keyval:nn {
+	\iow_now:Nn \g_@@_article_dotyoin_iow { #1 ~ = ~ { #2 } , }
+}
+\cs_generate_variant:Nn \@@_article_write_keyval:nn { nx, nV }
+
+\cs_new_protected:Nn \yoin_article_write_meta:nn {
+	\@@_article_write_keyval:nn { article-#1 } { #2 }
+}
+\cs_generate_variant:Nn \yoin_article_write_meta:nn { nx, nV }
+
+\cs_new_protected:Nn \yoin_article_write: {
+	\@@_article_write_keyval:nV { jobname } \g_yoin_jobname_tl
+	\@@_article_write_keyval:nx { totpages } { \ztotpages }
+	\@@_article_write_keyval:nV { currdir } \l_yoin_article_currdir_tl
+	\@@_article_write_keyval:nx { firstpage } { \int_use:N \l_yoin_article_firstpage_int }
+}
+
+\prop_new:N \l_@@_article_read_prop
+
+\cs_new_protected:Nn \yoin_article_read_put:nn {
+	\prop_put:Nnn \l_@@_article_read_prop { #1 } { #2 }
+}
+\cs_generate_variant:Nn \yoin_article_read_put:nn { V }
+
+\int_new:N \l_yoin_article_firstpage_int
+\int_set:Nn \l_yoin_article_firstpage_int { 1 }
+
+\keys_define:nn { yoin / toarticle } {
+	firstpage .code:n =
+		\int_set:Nn \l_yoin_article_firstpage_int { #1 }
+		\yoin_article_read_put:nn { firstpage } { #1 }
+		,
+
+	parent .code:n =
+		\file_if_exist:nT { ../ #1 .yoin } {
+			\yoin_keys_set_from_file:nn { yoin / toarticle } { ../ #1 .yoin }
+		}
+		\yoin_article_read_put:nn { parent } { #1 }
+		,
+	
+	unknown .code:n =
+		\yoin_article_read_put:Vn \l_keys_key_tl { #1 }
+		,
+}
+
+\bool_new:N \g_@@_article_read_bool
+
+\cs_new_protected:Nn \yoin_article_read: {
+	\bool_if:NF \g_@@_article_read_bool {
+		\file_if_exist:nT { ../ \l_yoin_article_currdir_tl .yoin1 } {
+			\yoin_keys_set_from_file:nn { yoin / toarticle } { ../ \l_yoin_article_currdir_tl .yoin1 }
+		}
+	}
+	\bool_gset_true:N \g_@@_article_read_bool
+}
+
+\cs_new:Nn \yoin_article_read_meta:n {
+	\prop_item:Nn \l_@@_article_read_prop { meta-#1 }
+}
+
+\cs_new_protected:Nn \yoin_article_read_meta_gset_tl_default:Nnn {
+	\prop_get:NnNTF \l_@@_article_read_prop { meta-#2 } \l_@@_article_tmpa_tl {
+		\tl_gset_eq:NN #1 \l_@@_article_tmpa_tl
+	} {
+		\tl_gset:Nn #1 { #3 }
+	}
+}
+
+\NewDocumentCommand \yoinArticleMeta { m } {
+	\yoin_article_read_meta:n { #1 }
+}
+
+\tl_new:N \l_yoin_article_currdir_tl
+\cs_generate_variant:Nn \regex_extract_all:nnN { nV }
+\cs_new_protected:Nn \yoin_article_getcurrdir:N {
+   \tl_set:Nx \l__yoin_article_tmpa_tl { \currfileabsdir / }
+   \regex_extract_all:nVN { /([^/][^/]+|[^/.]) } \l__yoin_article_tmpa_tl \l__yoin_article_tmpa_seq
+   \seq_get_right:NN \l__yoin_article_tmpa_seq #1
+}
+
+\iow_new:N \g_@@_article_dotyoin_iow
+\bool_if:NT \g_yoin_article_bool {
+	\yoin_article_getcurrdir:N \l_yoin_article_currdir_tl
+	\iow_open:Nn \g_@@_article_dotyoin_iow { \l_yoin_article_currdir_tl .yoin }
+	\yoin_article_read:
+	\AtBeginDocument {
+		\setcounter { page } { \l_yoin_article_firstpage_int }
+		\yoin_article_write:
+	}
+}
+%    \end{macrocode}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section{Experimental}
